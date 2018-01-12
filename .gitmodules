@@ -1,0 +1,6 @@
+[submodule "vendor/csystem"]
+	path = vendor/csystem
+	url = git@github.com:kildevaeld/csystem
+[submodule "vendor/uthash"]
+	path = vendor/uthash
+	url = git@github.com:troydhanson/uthash.git
