@@ -4,3 +4,6 @@
 [submodule "vendor/uthash"]
 	path = vendor/uthash
 	url = git@github.com:troydhanson/uthash.git
+[submodule "vendor/unity/unity-src"]
+	path = vendor/unity/unity-src
+	url = git@github.com:ThrowTheSwitch/Unity.git

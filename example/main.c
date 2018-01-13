@@ -28,7 +28,7 @@ int main(int argc, const char **argv) {
 
   dk_add_default_modules(d);
 
-  dk_add_module_fn(d, "./other.js", plugin);
+  // dk_add_module_fn(d, "./other.js", plugin);
 
   if (argc > 1) {
     const char *path = argv[1];

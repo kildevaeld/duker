@@ -6,7 +6,7 @@
  *  https://developer.mozilla.org/en/docs/Web/API/console
  */
 
-#include <duker/duker_console.h>
+#include "duker_console.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -36,6 +36,7 @@ static duk_ret_t duk__console_log_helper(duk_context *ctx,
   duk_get_prop_string(ctx, -1, "format");
 
   for (i = 0; i < n; i++) {
+
     if (duk_check_type_mask(ctx, i, DUK_TYPE_MASK_OBJECT)) {
       /* Slow path formatting. */
       duk_dup(ctx, -1); /* console.format */

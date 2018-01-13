@@ -1,6 +1,6 @@
 #include "process.h"
-#include "utils.h"
 #include <csystem/standardpaths.h>
+#include <csystem/string.h>
 
 static dump_context(duk_context *ctx) {
   duk_push_context_dump(ctx);
@@ -92,6 +92,7 @@ void dk_module_process_init(struct duker_s *ctx) {
 
   init_env(ctx->ctx);
   duk_put_prop_string(ctx->ctx, idx, "env");
-
   duk_put_prop_string(ctx->ctx, -2, "process");
+
+  duk_pop(ctx->ctx);
 }

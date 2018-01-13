@@ -46,12 +46,12 @@ static duk_ret_t path_join(duk_context *ctx) {
   }
   paths[len] = NULL;
 
-  char buffer[l + 1];
-  int i = cs_path_join(buffer, paths);
-  if (!i)
+  // char buffer[l + 1];
+  char *buffer = cs_path_join_array(NULL, paths);
+  if (!buffer)
     return 0;
 
-  duk_push_lstring(ctx, buffer, i);
+  duk_push_string(ctx, buffer);
 
   return 1;
 }

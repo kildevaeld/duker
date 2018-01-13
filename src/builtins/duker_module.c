@@ -4,7 +4,7 @@
  *  https://nodejs.org/api/modules.html
  */
 
-#include <duker/duker_module.h>
+#include "duker_module.h"
 /*
 static dump_context(duk_context *ctx) {
   duk_push_context_dump(ctx);

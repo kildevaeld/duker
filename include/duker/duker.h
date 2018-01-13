@@ -12,7 +12,7 @@ void dk_free(duker_t *);
 
 duk_context *dk_duk_context(duker_t *);
 
-duk_ret_t dk_eval_path(duker_t *, const char *);
+duk_ret_t dk_eval_path(duker_t *, char *);
 duk_ret_t dk_eval_script(duker_t *, const char *path, const char *script);
 
 int dk_add_module_fn(duker_t *ctx, const char *name,

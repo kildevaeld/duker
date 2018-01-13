@@ -2,16 +2,17 @@
 #include "module.h"
 #include "type.h"
 #include <csystem/file.h>
+#include <csystem/path.h>
 #include <duker/duker.h>
-#include <duker/duker_console.h>
-#include <duker/duker_module.h>
 #include <duktape.h>
 #include <stdlib.h>
-
 // Modules
 #include "modules/fs.h"
 #include "modules/path.h"
-#include "process.h"
+// builtins
+#include "builtins/duker_console.h"
+#include "builtins/duker_module.h"
+#include "builtins/process.h"
 
 duker_t *dk_create(duk_context *ctx) {
 
@@ -33,10 +34,10 @@ duker_t *dk_create(duk_context *ctx) {
   d->modules = NULL;
 
   // Save duker_t in global stash
-  duk_push_global_stash(ctx);
-  duk_push_pointer(ctx, (void *)d);
-  duk_put_prop_string(ctx, -2, "duker");
-  duk_pop(ctx);
+  duk_push_global_stash(d->ctx);
+  duk_push_pointer(d->ctx, (void *)d);
+  duk_put_prop_string(d->ctx, -2, "duker");
+  duk_pop(d->ctx);
 
   duk_console_init(d->ctx, DUK_CONSOLE_PROXY_WRAPPER);
   dk_module_process_init(d);
@@ -56,23 +57,37 @@ void dk_free(duker_t *d) {
 
 duk_context *dk_duk_context(duker_t *ctx) { return ctx->ctx; }
 
-duk_ret_t dk_eval_path(duker_t *ctx, const char *path) {
+duk_ret_t dk_eval_path(duker_t *ctx, char *path) {
   char *buffer = NULL;
-  if (!(buffer = cs_read_file(path, NULL))) {
+  int len = 0;
+  int c = 0;
+
+  if (!cs_path_is_abs(path)) {
+    path = cs_path_abs(path, NULL, 0);
+    c = 1;
+  }
+
+  if (!(buffer = cs_read_file(path, NULL, 0, &len))) {
+    if (c)
+      free(path);
     return 0;
   }
 
   duk_module_node_peval_main(ctx->ctx, path);
-  duk_eval_string(ctx->ctx, buffer);
+  duk_eval_lstring(ctx->ctx, buffer, len);
 
   free(buffer);
+  if (c)
+    free(path);
 }
 
 duk_ret_t dk_eval_script(duker_t *ctx, const char *path, const char *script) {
-  duk_ret_t ret = duk_module_node_peval_main(ctx->ctx, path);
+  duk_module_node_peval_main(ctx->ctx, path);
+  /*dk_dump_context_stdout(ctx->ctx);
   if (ret != DUK_EXEC_SUCCESS) {
     return ret;
-  }
+  }*/
+  dk_dump_context_stdout(ctx->ctx);
   duk_eval_string(ctx->ctx, script);
   return 0;
 }

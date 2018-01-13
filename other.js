@@ -1,3 +1,5 @@
+const o = require('./other2');
+
 exports.test = function () {
-    console.log('test');
+    console.log('Hello,', o());
 }

@@ -1,18 +1,21 @@
+
+file(GLOB BUILTINS
+    "builtins/*.c"
+)
+
 file(GLOB MODULES
     "modules/*.c"
 )
 
 set(SOURCES
     duker.c
-    duker_console.c
-    duker_module.c
     module.c
     log.c
-    process.c
     schema.c
     utils.c
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 
+    ${BUILTINS}
     ${MODULES}
 )
 

@@ -19,7 +19,7 @@ static char *_read_file(const char *filename, char *buffer) {
 static duk_ret_t fs_read_file(duk_context *ctx) {
 
   const char *path = duk_require_string(ctx, 0);
-  int size = cs_file_stat(path);
+  int size = cs_file_size(path);
   if (size == -1) {
     duk_type_error(ctx, "file does not exists");
   }
