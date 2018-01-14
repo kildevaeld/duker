@@ -12,7 +12,7 @@ set(SOURCES
     module.c
     log.c
     schema.c
-    utils.c
+    #utils.c
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 
     ${BUILTINS}

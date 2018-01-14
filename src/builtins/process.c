@@ -2,7 +2,7 @@
 #include <csystem/standardpaths.h>
 #include <csystem/string.h>
 
-static dump_context(duk_context *ctx) {
+static void dump_context(duk_context *ctx) {
   duk_push_context_dump(ctx);
   fprintf(stdout, "%s\n", duk_safe_to_string(ctx, -1));
   duk_pop(ctx);

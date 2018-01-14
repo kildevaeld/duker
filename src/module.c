@@ -21,11 +21,6 @@ static const char *get_main(duk_context *ctx) {
   return c;
 }
 
-static int show_fn(duk_context *ctx) {
-  printf("show");
-  return 0;
-}
-
 static duker_t *get_duker(duk_context *ctx) {
   duk_push_global_stash(ctx);
   duk_get_prop_string(ctx, -1, "duker");

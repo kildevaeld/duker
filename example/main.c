@@ -33,7 +33,16 @@ int main(int argc, const char **argv) {
   if (argc > 1) {
     const char *path = argv[1];
 
-    dk_eval_path(d, path);
+    duk_ret_t ret = dk_eval_path(d, path);
+    if (ret != DUK_EXEC_SUCCESS) {
+      if (duk_get_prop_string(ctx, -1, "stack")) {
+        duk_replace(ctx, -2);
+      } else {
+        duk_pop(ctx);
+      }
+      printf("--> %s\n", duk_safe_to_string(ctx, -1));
+      duk_pop(ctx);
+    }
   }
 
   dk_free(d);

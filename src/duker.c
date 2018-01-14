@@ -57,7 +57,7 @@ void dk_free(duker_t *d) {
 
 duk_context *dk_duk_context(duker_t *ctx) { return ctx->ctx; }
 
-duk_ret_t dk_eval_path(duker_t *ctx, char *path) {
+duk_ret_t dk_eval_path(duker_t *ctx, const char *path) {
   char *buffer = NULL;
   int len = 0;
   int c = 0;
@@ -69,16 +69,18 @@ duk_ret_t dk_eval_path(duker_t *ctx, char *path) {
 
   if (!(buffer = cs_read_file(path, NULL, 0, &len))) {
     if (c)
-      free(path);
-    return 0;
+      free((char *)path);
+    return DUK_EXEC_ERROR;
   }
 
-  duk_module_node_peval_main(ctx->ctx, path);
-  duk_eval_lstring(ctx->ctx, buffer, len);
+  duk_push_lstring(ctx->ctx, buffer, len);
+  duk_ret_t ret = duk_module_node_peval_main(ctx->ctx, path);
 
   free(buffer);
   if (c)
-    free(path);
+    free((char *)path);
+
+  return ret;
 }
 
 duk_ret_t dk_eval_script(duker_t *ctx, const char *path, const char *script) {
