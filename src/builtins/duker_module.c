@@ -157,7 +157,12 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
       duk__del_cached_module(ctx, id);
       (void)duk_throw(ctx); /* rethrow */
     }
-    return 1;
+
+    duk_idx_t id = duk_push_object(ctx);
+    duk_dup(ctx, -2);
+    duk_put_prop_string(ctx, id, "exports");
+
+    // return 1;
   } else {
     duk__del_cached_module(ctx, id);
     (void)duk_type_error(ctx, "invalid module load callback return value");
