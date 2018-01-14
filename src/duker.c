@@ -14,6 +14,8 @@
 #include "builtins/duker_module.h"
 #include "builtins/process.h"
 
+#include <duker/refs.h>
+
 duker_t *dk_create(duk_context *ctx) {
 
   duker_t *d = malloc(sizeof(duker_t));
@@ -38,6 +40,8 @@ duker_t *dk_create(duk_context *ctx) {
   duk_push_pointer(d->ctx, (void *)d);
   duk_put_prop_string(d->ctx, -2, "duker");
   duk_pop(d->ctx);
+
+  dk_ref_setup(d->ctx);
 
   duk_console_init(d->ctx, DUK_CONSOLE_PROXY_WRAPPER);
   dk_module_process_init(d);
@@ -114,4 +118,19 @@ void dk_dump_context_stdout(duk_context *ctx) {
 void dk_add_default_modules(duker_t *ctx) {
   dk_register_module_path(ctx);
   dk_register_module_fs(ctx);
+}
+
+void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {
+  // Save duker_t in global stash
+  duk_push_global_stash(ctx);
+  duk_push_pointer(ctx, ptr);
+  duk_put_prop_string(ctx, -2, name);
+  duk_pop(ctx);
+}
+void *dk_stash_get_ptr(duk_context *ctx, const char *name) {
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, name);
+  void *c = duk_to_pointer(ctx, -1);
+  duk_pop_2(ctx);
+  return c;
 }

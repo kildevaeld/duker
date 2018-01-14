@@ -27,6 +27,9 @@ void dk_dump_context_stdout(duk_context *ctx);
 
 void dk_add_default_modules(duker_t *ctx);
 
+void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr);
+void *dk_stash_get_ptr(duk_context *ctx, const char *name);
+
 #ifdef __cplusplus
 }
 #endif
