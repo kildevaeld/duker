@@ -14,6 +14,11 @@ include_directories(
 	vendor/uthash/include
 )
 
+
+include_directories(vendor/boringssl/include)
+add_subdirectory(vendor/boringssl)
+
+
 add_subdirectory(src)
 add_subdirectory(example)
 

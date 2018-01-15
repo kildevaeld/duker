@@ -7,3 +7,6 @@
 [submodule "vendor/unity/unity-src"]
 	path = vendor/unity/unity-src
 	url = git@github.com:ThrowTheSwitch/Unity.git
+[submodule "vendor/boringssl"]
+	path = vendor/boringssl
+	url = git@github.com:google/boringssl.git

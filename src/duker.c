@@ -7,6 +7,7 @@
 #include <duktape.h>
 #include <stdlib.h>
 // Modules
+#include "extras/crypto.h"
 #include "modules/fs.h"
 #include "modules/path.h"
 // builtins
@@ -135,6 +136,7 @@ void dk_dump_context_stdout(duk_context *ctx) {
 void dk_add_default_modules(duker_t *ctx) {
   dk_register_module_path(ctx);
   dk_register_module_fs(ctx);
+  dk_register_module_crypto(ctx);
 }
 
 void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {

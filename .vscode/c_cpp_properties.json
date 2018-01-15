@@ -12,6 +12,7 @@
                 "${workspaceRoot}/vendor/duktape/src",
                 "${workspaceRoot}/vendor/csystem/include",
                 "${workspaceRoot}/vendor/uthash/src",
+                "${workspaceRoot}/vendor/boringssl/include",
                 "${workspaceRoot}/vendor/unity/unity-src/src"
             ],
             "defines": [],

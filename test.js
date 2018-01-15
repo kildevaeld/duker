@@ -21,5 +21,6 @@ try {
 
 fs.mkdirSync("test_rapper", 0755)*/
 
-console.log('test');
-sdad()
+const crypto = require('crypto');
+console.log(crypto);
+const hash = crypto.createHash('sha');
