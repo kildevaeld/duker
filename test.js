@@ -1,4 +1,4 @@
-const o = require('./other');
+/*const o = require('./other');
 
 o.test();
 
@@ -19,6 +19,7 @@ try {
 }
 
 
-fs.mkdirSync("test_rapper", 0755)
+fs.mkdirSync("test_rapper", 0755)*/
 
-console.log(buffer);
+console.log('test');
+sdad()

@@ -59,9 +59,15 @@ void dk_free(duker_t *d) {
   free(d);
 }
 
+void dk_free_err(duker_err_t *err) {
+  if (!err)
+    return;
+  free(err->message);
+  free(err);
+}
 duk_context *dk_duk_context(duker_t *ctx) { return ctx->ctx; }
 
-duk_ret_t dk_eval_path(duker_t *ctx, const char *path) {
+duk_ret_t dk_eval_path(duker_t *ctx, const char *path, duker_err_t **err) {
   char *buffer = NULL;
   int len = 0;
   int c = 0;
@@ -74,6 +80,11 @@ duk_ret_t dk_eval_path(duker_t *ctx, const char *path) {
   if (!(buffer = cs_read_file(path, NULL, 0, &len))) {
     if (c)
       free((char *)path);
+    if (err) {
+      duker_err_t *e = (duker_err_t *)malloc(sizeof(duker_err_t));
+      e->message = strdup("file not found");
+      *err = e;
+    }
     return DUK_EXEC_ERROR;
   }
 
@@ -84,18 +95,24 @@ duk_ret_t dk_eval_path(duker_t *ctx, const char *path) {
   if (c)
     free((char *)path);
 
+  if (ret == DUK_EXEC_ERROR && err) {
+    if (duk_get_prop_string(ctx->ctx, -1, "stack")) {
+      duk_replace(ctx->ctx, -2);
+    } else {
+      duk_pop(ctx->ctx);
+    }
+    duker_err_t *e = (duker_err_t *)malloc(sizeof(duker_err_t));
+    e->message = strdup(duk_require_string(ctx->ctx, -1));
+    *err = e;
+  }
+
   return ret;
 }
 
 duk_ret_t dk_eval_script(duker_t *ctx, const char *path, const char *script) {
-  duk_module_node_peval_main(ctx->ctx, path);
-  /*dk_dump_context_stdout(ctx->ctx);
-  if (ret != DUK_EXEC_SUCCESS) {
-    return ret;
-  }*/
-  dk_dump_context_stdout(ctx->ctx);
+
   duk_eval_string(ctx->ctx, script);
-  return 0;
+  return duk_module_node_peval_main(ctx->ctx, path);
 }
 
 int dk_add_module_fn(duker_t *ctx, const char *name,
