@@ -15,8 +15,14 @@ include_directories(
 )
 
 
-include_directories(vendor/boringssl/include)
-add_subdirectory(vendor/boringssl)
+##include_directories(vendor/boringssl/include)
+##add_subdirectory(vendor/boringssl)
+
+include_directories(vendor/mbedtls/include)
+option(ENABLE_PROGRAMS "Build mbed TLS programs." OFF)
+option(ENABLE_TESTING "Build mbed TLS tests." OFF)
+
+add_subdirectory(vendor/mbedtls)
 
 
 add_subdirectory(src)

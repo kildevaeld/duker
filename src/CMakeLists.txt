@@ -23,7 +23,7 @@ set(SOURCES
 )
 
 add_library(duker ${SOURCES})
-target_link_libraries(duker csystem crypto)
+target_link_libraries(duker csystem mbedcrypto)
 target_include_directories(duker PUBLIC ${PROJECT_ROOT}/include ${PROJECT_ROOT}/vendor/duktape/src)
 
 target_compile_definitions(duker PRIVATE LOG_USE_COLOR)

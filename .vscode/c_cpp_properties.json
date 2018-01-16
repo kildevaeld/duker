@@ -1,5 +1,6 @@
 {
-    "configurations": [{
+    "configurations": [
+        {
             "name": "Mac",
             "includePath": [
                 "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1",
@@ -13,7 +14,8 @@
                 "${workspaceRoot}/vendor/csystem/include",
                 "${workspaceRoot}/vendor/uthash/src",
                 "${workspaceRoot}/vendor/boringssl/include",
-                "${workspaceRoot}/vendor/unity/unity-src/src"
+                "${workspaceRoot}/vendor/unity/unity-src/src",
+                "${workspaceRoot}/vendor/mbedtls/include"
             ],
             "defines": [],
             "intelliSenseMode": "clang-x64",

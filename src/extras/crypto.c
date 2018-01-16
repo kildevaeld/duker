@@ -1,13 +1,34 @@
 #include "crypto.h"
-#include <openssl/sha.h>
+#include <mbedtls/sha1.h>
+#include <mbedtls/sha256.h>
+#include <mbedtls/sha512.h>
 
-enum hash_type { HASH_SHA, HASH_SHA256 };
+enum hash_type {
+  HASH_SHA1 = 1,
+  HASH_SHA224,
+  HASH_SHA256,
+  HASH_SHA384,
+  HASH_SHA512
+};
+
+static enum hash_type string_to_hash_type(const char *algo) {
+  if (strcmp(algo, "sha") == 0) {
+    return HASH_SHA1;
+  } else if (strcmp(algo, "sha224") == 0) {
+    return HASH_SHA224;
+  } else if (strcmp(algo, "sha256") == 0) {
+    return HASH_SHA256;
+  } else if (strcmp(algo, "sha384") == 0) {
+    return HASH_SHA384;
+  } else if (strcmp(algo, "sha512") == 0) {
+    return HASH_SHA512;
+  }
+  return 0;
+}
 
 typedef struct dukext_crypto_hash_s {
   enum hash_type type;
   void *handle;
-  // int hash_ref;
-  int ref;
 } dukext_crypto_hash_t;
 
 static dukext_crypto_hash_t *hash_instance(duk_context *ctx) {
@@ -32,19 +53,52 @@ static duk_ret_t crypto_create_hash_update(duk_context *ctx) {
   }
 
   switch (hash->type) {
-  case HASH_SHA:
-    return SHA1_Update(hash->handle, data, size);
+  case HASH_SHA1:
+    mbedtls_sha1_update(hash->handle, (const unsigned char *)data, size);
+    break;
+  case HASH_SHA224:
   case HASH_SHA256:
-    return SHA256_Update(hash->handle, data, size);
-    /*case DUKEXT_CRYPTO_HASH_SHA256:
-      return SHA256_Update(handle->hash, data, size);
-    case DUKEXT_CRYPTO_HASH_SHA512:
-      return SHA512_Update(handle->hash, data, size);*/
+    mbedtls_sha256_update(hash->handle, (const unsigned char *)data, size);
+    break;
+  case HASH_SHA384:
+  case HASH_SHA512:
+    mbedtls_sha256_update(hash->handle, (const unsigned char *)data, size);
+    break;
   }
 
-  return 0;
+  duk_push_this(ctx);
+
+  return 1;
 }
-static duk_ret_t crypto_create_hash_sum(duk_context *ctx) { return 0; }
+
+static duk_ret_t crypto_create_hash_sum(duk_context *ctx) {
+
+  dukext_crypto_hash_t *hash = hash_instance(ctx);
+  unsigned char *ptr;
+  switch (hash->type) {
+  case HASH_SHA1:
+    ptr = duk_push_fixed_buffer(ctx, sizeof(char) * 20);
+    mbedtls_sha1_finish(hash->handle, ptr);
+    mbedtls_sha1_starts(hash->handle);
+    // mbedtls_sha1_finish(&hash->toms.sha1, ptr);
+    // mbedtls_sha1_starts(&hash->toms.sha1);
+    break;
+  case HASH_SHA224:
+  case HASH_SHA256:
+    ptr = duk_push_fixed_buffer(ctx, sizeof(char) * 32);
+    mbedtls_sha256_finish(hash->handle, ptr);
+    mbedtls_sha256_starts(hash->handle, HASH_SHA224 == hash->type);
+    break;
+  case HASH_SHA384:
+  case HASH_SHA512:
+    ptr = duk_push_fixed_buffer(ctx, sizeof(char) * 64);
+    mbedtls_sha512_finish(hash->handle, ptr);
+    mbedtls_sha512_starts(hash->handle, HASH_SHA384 == hash->type);
+    break;
+  }
+
+  return 1;
+}
 static duk_ret_t crypto_create_hash_finalize(duk_context *ctx) {
 
   duk_get_prop_string(ctx, 0,
@@ -53,20 +107,25 @@ static duk_ret_t crypto_create_hash_finalize(duk_context *ctx) {
 
   dukext_crypto_hash_t *handle = duk_get_buffer(ctx, -1, NULL);
   switch (handle->type) {
-  case HASH_SHA:
-    free(handle->handle);
+  case HASH_SHA1:
+    mbedtls_sha1_free(handle->handle);
     break;
+  case HASH_SHA224:
   case HASH_SHA256:
-    free(handle->handle);
+    mbedtls_sha256_free(handle->handle);
+    break;
+  case HASH_SHA384:
+  case HASH_SHA512:
+    mbedtls_sha512_free(handle->handle);
     break;
   }
-  // free(handle);
+  free(handle->handle);
   return 0;
 }
 
 const duk_function_list_entry crypto_hash_fns[] = {
     {"update", crypto_create_hash_update, 1},
-    {"sum", crypto_create_hash_sum, 1},
+    {"digest", crypto_create_hash_sum, 1},
     {NULL}};
 
 static duk_ret_t crypto_create_hash(duk_context *ctx) {
@@ -83,35 +142,27 @@ static duk_ret_t crypto_create_hash(duk_context *ctx) {
   handle = duk_push_fixed_buffer(ctx, sizeof(handle));
   handle->handle = NULL;
 
-  if (strcmp(algo, "sha") == 0) {
-    handle->handle = malloc(sizeof(SHA_CTX));
-    handle->type = HASH_SHA;
-    if (!SHA1_Init(handle->handle)) {
-      goto fail;
-    }
+  handle->type = string_to_hash_type(algo);
 
-  } else if (strcmp(algo, "sha256") == 0) {
-    handle->handle = malloc(sizeof(SHA256_CTX));
-    handle->type = HASH_SHA256;
-    if (!SHA256_Init(handle->handle)) {
-      goto fail;
-    }
-
-  } /*else if (strcmp(algo, "sha512") == 0) {
-    handle->hash = malloc(sizeof(SHA512_CTX));
-    handle->type = DUKEXT_CRYPTO_HASH_SHA512;
-    if (!SHA512_Init(handle->hash)) {
-      goto fail;
-    }
-
-  } else if (strcmp(algo, "md5") == 0) {
-    handle->hash = malloc(sizeof(MD5_CTX));
-    handle->type = DUKEXT_CRYPTO_HASH_MD5;
-    if (!MD5_Init(handle->hash)) {
-      goto fail;
-    }
-
-  }*/ else {
+  switch (handle->type) {
+  case HASH_SHA1:
+    handle->handle = malloc(sizeof(mbedtls_sha1_context));
+    mbedtls_sha1_init(handle->handle);
+    mbedtls_sha1_starts(handle->handle);
+    break;
+  case HASH_SHA224:
+  case HASH_SHA256:
+    handle->handle = malloc(sizeof(mbedtls_sha256_context));
+    mbedtls_sha256_init(handle->handle);
+    mbedtls_sha256_starts(handle->handle, handle->type == HASH_SHA224);
+    break;
+  case HASH_SHA384:
+  case HASH_SHA512:
+    handle->handle = malloc(sizeof(mbedtls_sha512_context));
+    mbedtls_sha512_init(handle->handle);
+    mbedtls_sha512_starts(handle->handle, handle->type == HASH_SHA384);
+    break;
+  default:
     duk_error(ctx, 200, "crypto: unknown algorithm: %s", algo);
   }
 

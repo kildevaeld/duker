@@ -10,3 +10,6 @@
 [submodule "vendor/boringssl"]
 	path = vendor/boringssl
 	url = git@github.com:google/boringssl.git
+[submodule "vendor/mbedtls"]
+	path = vendor/mbedtls
+	url = git@github.com:ARMmbed/mbedtls.git

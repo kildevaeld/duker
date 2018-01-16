@@ -23,4 +23,6 @@ fs.mkdirSync("test_rapper", 0755)*/
 
 const crypto = require('crypto');
 console.log(crypto);
-const hash = crypto.createHash('sha');
+const hash = crypto.createHash('sha').update("Hello, World").digest();
+
+console.log(Duktape.enc('hex', hash));
