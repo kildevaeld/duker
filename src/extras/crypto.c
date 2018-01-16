@@ -11,6 +11,17 @@ enum hash_type {
   HASH_SHA512
 };
 
+static const char *str_or_buffer(duk_context *ctx, duk_idx_t idx, size_t *len) {
+  if (duk_is_string(ctx, idx)) {
+    const char *out = duk_require_string(ctx, idx);
+    *len = strlen(out);
+    return out;
+  } else if (duk_is_buffer(ctx, idx)) {
+    return duk_get_buffer(ctx, idx, (duk_size_t *)len);
+  }
+  return NULL;
+}
+
 static enum hash_type string_to_hash_type(const char *algo) {
   if (strcmp(algo, "sha") == 0) {
     return HASH_SHA1;
@@ -47,9 +58,8 @@ static duk_ret_t crypto_create_hash_update(duk_context *ctx) {
 
   const char *data = NULL;
   size_t size = 0;
-  if (duk_is_string(ctx, 0)) {
-    data = duk_require_string(ctx, 0);
-    size = strlen(data);
+  if (!(data = str_or_buffer(ctx, 0, &size))) {
+    duk_error(ctx, DUK_ERR_TYPE_ERROR, "should be buffer or string");
   }
 
   switch (hash->type) {
