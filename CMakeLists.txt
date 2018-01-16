@@ -18,9 +18,13 @@ include_directories(
 ##include_directories(vendor/boringssl/include)
 ##add_subdirectory(vendor/boringssl)
 
+## Crypto/TLS
 include_directories(vendor/mbedtls/include)
 option(ENABLE_PROGRAMS "Build mbed TLS programs." OFF)
 option(ENABLE_TESTING "Build mbed TLS tests." OFF)
+
+## Zlib
+add_subdirectory(vendor/miniz)
 
 add_subdirectory(vendor/mbedtls)
 

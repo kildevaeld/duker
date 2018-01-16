@@ -13,3 +13,6 @@
 [submodule "vendor/mbedtls"]
 	path = vendor/mbedtls
 	url = git@github.com:ARMmbed/mbedtls.git
+[submodule "vendor/miniz/miniz-src"]
+	path = vendor/miniz/miniz-src
+	url = git@github.com:richgel999/miniz.git
