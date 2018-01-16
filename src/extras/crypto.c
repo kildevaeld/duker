@@ -80,8 +80,6 @@ static duk_ret_t crypto_create_hash_sum(duk_context *ctx) {
     ptr = duk_push_fixed_buffer(ctx, sizeof(char) * 20);
     mbedtls_sha1_finish(hash->handle, ptr);
     mbedtls_sha1_starts(hash->handle);
-    // mbedtls_sha1_finish(&hash->toms.sha1, ptr);
-    // mbedtls_sha1_starts(&hash->toms.sha1);
     break;
   case HASH_SHA224:
   case HASH_SHA256:
