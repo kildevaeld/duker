@@ -21,8 +21,15 @@ try {
 
 fs.mkdirSync("test_rapper", 0755)*/
 
-const crypto = require('crypto');
-console.log(crypto);
+const crypto = require('crypto'),
+    zlib = require('zlib'),
+    fs = require('fs');
 const hash = crypto.createHash('sha').update("Hello, World").digest();
 
 console.log(Duktape.enc('hex', hash));
+
+var out = zlib.deflate("Hello, World");
+
+console.log(Duktape.enc('hex', out));
+
+fs.writeFileSync('test2.gz', out);

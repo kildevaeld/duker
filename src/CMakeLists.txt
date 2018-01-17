@@ -20,6 +20,8 @@ set(SOURCES
     ${MODULES}
 
     extras/crypto.c
+    extras/zlib.c
+    extras/gzip.c
 )
 
 add_library(duker ${SOURCES})
