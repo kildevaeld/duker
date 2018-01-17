@@ -30,6 +30,6 @@ console.log(Duktape.enc('hex', hash));
 
 var out = zlib.gzip("Hello, World, You Too");
 
-console.log(Duktape.enc('hex', out), out);
+console.log(new TextDecoder("utf-8").decode(zlib.unzip(out)));
 
 fs.writeFileSync('test2.gz', out);
