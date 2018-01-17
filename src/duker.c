@@ -8,6 +8,7 @@
 #include <stdlib.h>
 // Modules
 #include "extras/crypto.h"
+#include "extras/http.h"
 #include "extras/zlib.h"
 #include "modules/fs.h"
 #include "modules/path.h"
@@ -55,6 +56,11 @@ duker_t *dk_create(duk_context *ctx) {
 void dk_free(duker_t *d) {
   if (!d)
     return;
+
+  if (d->_m) {
+    dk_unregister_module_http(d);
+  }
+
   free_modules(d);
   if (d->_c)
     duk_destroy_heap(d->ctx);
@@ -135,10 +141,12 @@ void dk_dump_context_stdout(duk_context *ctx) {
 }
 
 void dk_add_default_modules(duker_t *ctx) {
+  ctx->_m = 1;
   dk_register_module_path(ctx);
   dk_register_module_fs(ctx);
   dk_register_module_crypto(ctx);
   dk_register_module_zlib(ctx);
+  dk_register_module_http(ctx);
 }
 
 void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {

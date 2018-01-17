@@ -22,6 +22,8 @@ set(SOURCES
     extras/crypto.c
     extras/zlib.c
     extras/gzip.c
+
+    extras/http.c
 )
 
 add_library(duker ${SOURCES})
@@ -29,6 +31,8 @@ target_link_libraries(duker
     csystem 
     mbedcrypto
     zlibstatic
+
+    libcurl
 )
 target_include_directories(duker PUBLIC ${PROJECT_ROOT}/include ${PROJECT_ROOT}/vendor/duktape/src)
 

@@ -36,7 +36,7 @@ int main(int argc, const char **argv) {
     fprintf(stderr, "usage: duker <path>\n");
     ret = EXIT_FAILURE;
   }
-
+  // sleep(10);
   dk_free(d);
 
   return ret;

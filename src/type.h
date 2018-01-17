@@ -18,5 +18,6 @@ struct modules_bag_s {
 struct duker_s {
   duk_context *ctx;
   struct modules_bag_s *modules;
-  int _c;
+  int _c; // we created duk_context;
+  int _m; // use modules
 };

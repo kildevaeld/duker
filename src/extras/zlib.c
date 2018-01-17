@@ -81,7 +81,7 @@ static duk_ret_t zlib_compress_buffer(duk_context *ctx, bool gzip) {
 
   size_t clen = compressBound(len) + 18;
   unsigned char *buffer = duk_push_dynamic_buffer(ctx, clen);
-  int status = compress_buffer(buffer, clen, input, len, gzip,
+  int status = compress_buffer(buffer, clen, (unsigned char *)input, len, gzip,
                                Z_DEFAULT_COMPRESSION, true);
   if (!status) {
     duk_type_error(ctx, "could not %d", status);
@@ -106,7 +106,7 @@ static duk_ret_t zlib_decompress_buffer(duk_context *ctx, bool gzip) {
 
   size_t clen = len * 4; // compressBound(len) + 18;
   unsigned char *buffer = duk_push_dynamic_buffer(ctx, clen);
-  int status = compress_buffer(buffer, clen, input, len, gzip,
+  int status = compress_buffer(buffer, clen, (unsigned char *)input, len, gzip,
                                Z_DEFAULT_COMPRESSION, false);
   if (!status) {
     duk_type_error(ctx, "could not decompress %d", status);

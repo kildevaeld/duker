@@ -20,7 +20,7 @@ try {
 
 
 fs.mkdirSync("test_rapper", 0755)*/
-
+/*
 const crypto = require('crypto'),
     zlib = require('zlib'),
     fs = require('fs');
@@ -32,4 +32,10 @@ var out = zlib.gzip("Hello, World, You Too");
 
 console.log(new TextDecoder("utf-8").decode(zlib.unzip(out)));
 
-fs.writeFileSync('test2.gz', out);
+fs.writeFileSync('test2.gz', out);*/
+
+const http = require('http');
+
+var buf = http.get('http://google.com');
+
+//console.log(new TextDecoder("utf-8").decode(buf));
