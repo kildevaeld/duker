@@ -28,8 +28,8 @@ const hash = crypto.createHash('sha').update("Hello, World").digest();
 
 console.log(Duktape.enc('hex', hash));
 
-var out = zlib.deflate("Hello, World");
+var out = zlib.gzip("Hello, World, You Too");
 
-console.log(Duktape.enc('hex', out));
+console.log(Duktape.enc('hex', out), out);
 
 fs.writeFileSync('test2.gz', out);

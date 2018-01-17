@@ -24,8 +24,8 @@ option(ENABLE_PROGRAMS "Build mbed TLS programs." OFF)
 option(ENABLE_TESTING "Build mbed TLS tests." OFF)
 
 ## Zlib
-add_subdirectory(vendor/miniz)
-
+add_subdirectory(vendor/zlib)
+include_directories(vendor/zlib)
 add_subdirectory(vendor/mbedtls)
 
 

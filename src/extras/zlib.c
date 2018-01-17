@@ -1,6 +1,40 @@
 #include "zlib.h"
 #include "gzip.h"
-#include <miniz.h>
+#include <stdbool.h>
+#include <string.h>
+#include <zlib.h>
+
+int compress_buffer(unsigned char *dest, size_t dlen, unsigned char *src,
+                    unsigned int slen, bool gzip, int level) {
+
+  z_stream stream;
+  int bts = 0, ret = 0; //, dlen = 0;
+  memset(&stream, 0, sizeof(z_stream));
+  stream.zalloc = Z_NULL;
+  stream.zfree = Z_NULL;
+  stream.opaque = Z_NULL;
+
+  if (Z_OK != deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
+                           15 + (gzip ? 16 : 0), 8, Z_DEFAULT_STRATEGY)) {
+    return 0;
+  }
+
+  stream.next_in = src;
+  stream.avail_in = slen;
+
+  stream.next_out = dest;
+  stream.avail_out = dlen;
+  int err;
+  if ((err = deflate(&stream, Z_FINISH)) != Z_STREAM_END) {
+    deflateEnd(&stream);
+    return 0;
+  }
+
+  ret = stream.total_out;
+  deflateEnd(&stream);
+  return ret;
+}
+
 static const char *duk_str_or_buffer(duk_context *ctx, duk_idx_t idx,
                                      size_t *len) {
   if (duk_is_string(ctx, idx)) {
@@ -15,44 +49,42 @@ static const char *duk_str_or_buffer(duk_context *ctx, duk_idx_t idx,
 
 static duk_ret_t zlib_create_deflate(duk_context *ctx) { return 0; }
 
-static duk_ret_t zlib_deflate(duk_context *ctx) {
-
+static duk_ret_t zlib_compress_buffer(duk_context *ctx, bool gzip) {
   const char *input = NULL;
   size_t len = 0;
 
   if (!(input = duk_str_or_buffer(ctx, 0, &len))) {
     duk_type_error(ctx, "invalid argument");
   }
-  size_t clen = compressBound(len);
-  unsigned char *buffer = duk_push_dynamic_buffer(ctx, clen + 18);
-  cs_gzip_write_hdr(buffer);
 
+  len++;
+
+  size_t clen = compressBound(len) + 18;
+  unsigned char *buffer = duk_push_dynamic_buffer(ctx, clen);
   int status =
-      compress2(buffer + 10, (mz_ulong *)&clen, (const unsigned char *)input,
-                len, Z_DEFAULT_COMPRESSION);
-
-  uint32_t crc = mz_crc32(0L, input, len);
-
-  // crc = mz_crc32(crc, input, len);
-
-  cs_gzip_ctx_t gzip;
-  gzip.len = len;
-  gzip.crc = crc;
-
-  cs_gzip_write_trail(&gzip, buffer + 10 + clen);
-
-  duk_resize_buffer(ctx, -1, clen + 18);
-
-  if (status != Z_OK) {
-    duk_type_error(ctx, "could not compress");
+      compress_buffer(buffer, clen, input, len, gzip, Z_DEFAULT_COMPRESSION);
+  if (!status) {
+    duk_type_error(ctx, "could not %d", status);
   }
+
+  clen = status;
+
+  duk_resize_buffer(ctx, -1, clen);
 
   return 1;
 }
 
+static duk_ret_t zlib_deflate_buffer(duk_context *ctx) {
+  return zlib_compress_buffer(ctx, false);
+}
+
+static duk_ret_t zlib_gzip_buffer(duk_context *ctx) {
+  return zlib_compress_buffer(ctx, true);
+}
+
 const duk_function_list_entry zlib_fns[] = {
     {"createDeflate", zlib_create_deflate, 1},
-    {"deflate", zlib_deflate, 1},
+    {"gzip", zlib_gzip_buffer, 1},
     {NULL}};
 
 static duk_ret_t initialize_zlib_module(duk_context *ctx) {

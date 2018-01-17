@@ -16,3 +16,6 @@
 [submodule "vendor/miniz/miniz-src"]
 	path = vendor/miniz/miniz-src
 	url = git@github.com:richgel999/miniz.git
+[submodule "vendor/zlib"]
+	path = vendor/zlib
+	url = git@github.com:luvit/zlib.git

@@ -28,7 +28,7 @@ add_library(duker ${SOURCES})
 target_link_libraries(duker
     csystem 
     mbedcrypto
-    miniz
+    zlib
 )
 target_include_directories(duker PUBLIC ${PROJECT_ROOT}/include ${PROJECT_ROOT}/vendor/duktape/src)
 
