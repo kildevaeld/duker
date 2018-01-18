@@ -38,6 +38,17 @@ static void put_ctx(duker_pool_t *pool, duker_t *ctx) {
   pthread_mutex_unlock(&pool->mutex);
 }
 
+static void worker_thread(struct duker_pool_task *task) {
+
+  duker_t *ctx = take_ctx(task->pool);
+
+
+
+  put_ctx(task->pool, ctx);
+  free(task);
+
+}
+
 duker_pool_t *dk_create_pool(int number) {
   duker_pool_t *pool = malloc(sizeof(duker_pool_t));
   pool->ctxs = malloc(sizeof(duker_t) * number);
