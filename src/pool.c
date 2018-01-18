@@ -60,7 +60,17 @@ static void worker_thread(void *data) {
   free(task);
 }
 
-duker_pool_t *dk_create_pool(int number) {
+static duk_context *create_context(void *d) {
+  return duk_create_heap_default();
+}
+
+duker_pool_t *dk_create_pool_default(int number) {
+  duk_context *ctx = dk_create_pool(number, create_context, NULL);
+  dk_add_default_modules(ctx);
+  return ctx;
+}
+
+duker_pool_t *dk_create_pool(int number, dk_context_creator fn, void *udata) {
   duker_pool_t *pool = malloc(sizeof(duker_pool_t));
   pool->ctxs = malloc(sizeof(duker_t) * number);
   pool->c_idle = number;
@@ -69,10 +79,8 @@ duker_pool_t *dk_create_pool(int number) {
   int n = number;
 
   while (n--) {
-    pool->ctxs[n] = dk_create(NULL);
-    dk_add_default_modules(pool->ctxs[n]);
+    pool->ctxs[n] = fn(udata);
   }
-
   pool->thpool = thpool_init(number);
 
   return pool;

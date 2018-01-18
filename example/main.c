@@ -25,7 +25,7 @@ static int run_single(const char *path) {
 
 static int run_pool(const char **path, size_t count, int n) {
 
-  duker_pool_t *pool = dk_create_pool(4);
+  duker_pool_t *pool = dk_create_pool_default(4);
   int i = 0;
   while (i < count) {
     dk_pool_add_path(pool, path[i]);

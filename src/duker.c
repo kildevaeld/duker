@@ -10,7 +10,11 @@
 
 // Modules
 #include "extras/crypto.h"
+
+#if defined(DUKER_USE_HTTP)
 #include "extras/http.h"
+#endif
+
 #include "extras/zlib.h"
 #include "modules/fs.h"
 #include "modules/path.h"
@@ -24,7 +28,7 @@ duker_t *dk_create(duk_context *ctx) {
   duker_t *d = malloc(sizeof(duker_t));
   if (!d)
     return NULL;
-
+  // No duk context supplied, create one.
   if (!ctx) {
     d->ctx = duk_create_heap_default();
     if (!d->ctx) {
@@ -38,11 +42,6 @@ duker_t *dk_create(duk_context *ctx) {
 
   d->modules = NULL;
 
-  // Save duker_t in global stash
-  /*duk_push_global_stash(d->ctx);
-  duk_push_pointer(d->ctx, (void *)d);
-  duk_put_prop_string(d->ctx, -2, "duker");
-  duk_pop(d->ctx);*/
   dk_stash_set_ptr(d->ctx, "duker", d);
 
   dk_ref_setup(d->ctx);
@@ -59,7 +58,9 @@ void dk_free(duker_t *d) {
     return;
 
   if (d->_m) {
+#if defined(DUKER_USE_HTTP)
     dk_unregister_module_http(d);
+#endif
   }
 
   free_modules(d);
@@ -75,6 +76,7 @@ void dk_free_err(duker_err_t *err) {
   free(err->message);
   free(err);
 }
+
 duk_context *dk_duk_context(duker_t *ctx) { return ctx->ctx; }
 
 duk_ret_t dk_eval_path(duker_t *ctx, const char *path, duker_err_t **err) {
@@ -136,8 +138,6 @@ int dk_add_module_str(duker_t *ctx, const char *name, const char *content) {
 
 void dk_dump_context_stdout(duk_context *ctx) {
   duk_push_context_dump(ctx);
-
-  // fprintf(stdout, "%s\n", duk_safe_to_string(ctx, -1));
   log_debug("%s\n", duk_safe_to_string(ctx, -1));
   duk_pop(ctx);
 }
@@ -148,7 +148,10 @@ void dk_add_default_modules(duker_t *ctx) {
   dk_register_module_fs(ctx);
   dk_register_module_crypto(ctx);
   dk_register_module_zlib(ctx);
+
+#if defined(DUKER_USE_HTTP)
   dk_register_module_http(ctx);
+#endif
 }
 
 void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {

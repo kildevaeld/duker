@@ -36,11 +36,18 @@ target_link_libraries(duker
     csystem 
     mbedcrypto
     pthread
-
     zlibstatic
-
-    libcurl
 )
+
+
+if(DUKER_BUILD_HTTP)
+    target_link_libraries(duker libcurl)
+endif(DUKER_BUILD_HTTP)
+
 target_include_directories(duker PUBLIC ${PROJECT_ROOT}/include ${PROJECT_ROOT}/vendor/duktape/src)
 
 target_compile_definitions(duker PRIVATE LOG_USE_COLOR)
+
+if(DUKER_BUILD_HTTP)
+    target_compile_definitions(duker PRIVATE DUKER_USE_HTTP)
+endif(DUKER_BUILD_HTTP)
