@@ -22,3 +22,6 @@
 [submodule "vendor/curl"]
 	path = vendor/curl
 	url = git@github.com:curl/curl.git
+[submodule "vendor/c-thread-pool"]
+	path = vendor/c-thread-pool
+	url = git@github.com:Pithikos/C-Thread-Pool.git

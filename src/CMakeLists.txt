@@ -14,6 +14,7 @@ set(SOURCES
     schema.c
     refs.c
     #utils.c
+    pool.c
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 
     ${BUILTINS}
