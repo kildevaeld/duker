@@ -3,7 +3,6 @@
 #include <pthread.h>
 #include <thpool.h>
 
-
 struct duker_pool_s {
   duker_t **ctxs;
   int c_idle;
@@ -14,8 +13,7 @@ struct duker_pool_s {
 
 struct duker_pool_task {
   duker_pool_t *pool;
-  const char *script;
-  
+  char *script;
 };
 
 static duker_t *take_ctx(duker_pool_t *pool) {
@@ -38,16 +36,28 @@ static void put_ctx(duker_pool_t *pool, duker_t *ctx) {
   pthread_mutex_unlock(&pool->mutex);
 }
 
-static void worker_thread(struct duker_pool_task *task) {
+static void worker_thread(void *data) {
+
+  struct duker_pool_task *task = (struct duker_pool_task *)data;
 
   duker_t *ctx = take_ctx(task->pool);
 
+  duk_push_global_object(ctx->ctx);
+  duk_push_number(ctx->ctx, (int)pthread_self());
+  duk_put_prop_string(ctx->ctx, -2, "thread_id");
+  duk_pop(ctx->ctx);
 
+  duker_err_t *err = NULL;
+  if (dk_eval_path(ctx, task->script, &err) != DUK_EXEC_SUCCESS) {
+    fprintf(stderr, "error: path %s: %s", task->script, err->message);
+    dk_free_err(err);
+  }
 
   // Cleaning
   put_ctx(task->pool, ctx);
-  free(task);
 
+  free(task->script);
+  free(task);
 }
 
 duker_pool_t *dk_create_pool(int number) {
@@ -56,11 +66,39 @@ duker_pool_t *dk_create_pool(int number) {
   pool->c_idle = number;
   pool->c_inuse = 0;
 
-  while (--number >= 0) {
-    pool->ctxs[number] = dk_create(NULL);
+  int n = number;
+
+  while (n--) {
+    pool->ctxs[n] = dk_create(NULL);
+    dk_add_default_modules(pool->ctxs[n]);
   }
 
   pool->thpool = thpool_init(number);
 
   return pool;
 }
+
+void dk_pool_wait(duker_pool_t *pool) { thpool_wait(pool->thpool); }
+
+void dk_pool_start(duker_pool_t *pool) { thpool_resume(pool->thpool); }
+
+void dk_free_pool(duker_pool_t *p) {
+  thpool_wait(p->thpool);
+  thpool_destroy(p->thpool);
+  while (p->c_idle--) {
+    printf("free \n");
+    free(p->ctxs[p->c_idle]);
+  }
+  free(p->ctxs);
+  free(p);
+}
+
+void dk_pool_add_path(duker_pool_t *pool, const char *path) {
+  struct duker_pool_task *task = malloc(sizeof(struct duker_pool_task));
+  task->pool = pool;
+  task->script = strdup(path);
+
+  thpool_add_work(pool->thpool, (void *)worker_thread, task);
+}
+
+void dk_pool_add_script(duker_pool_t *pool, const char *script) {}

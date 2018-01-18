@@ -34,8 +34,8 @@ console.log(new TextDecoder("utf-8").decode(zlib.unzip(out)));
 
 fs.writeFileSync('test2.gz', out);*/
 
-const http = require('http');
-
-var buf = http.get('http://google.com');
+//const http = require('http');
+console.log('Test %s', thread_id);
+//var buf = http.get('http://google.com');
 
 //console.log(new TextDecoder("utf-8").decode(buf));
