@@ -14,7 +14,7 @@ set(SOURCES
     schema.c
     refs.c
     #utils.c
-    pool.c
+   
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 
     ${BUILTINS}
@@ -25,12 +25,18 @@ set(SOURCES
     extras/gzip.c
 
     extras/http.c
+
+    ${PROJECT_ROOT}/vendor/c-thread-pool/thpool.c
+    pool.c
+
 )
 
 add_library(duker ${SOURCES})
 target_link_libraries(duker
     csystem 
     mbedcrypto
+    pthread
+
     zlibstatic
 
     libcurl

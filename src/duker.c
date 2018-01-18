@@ -6,6 +6,8 @@
 #include <duker/duker.h>
 #include <duktape.h>
 #include <stdlib.h>
+#include <duker/refs.h>
+
 // Modules
 #include "extras/crypto.h"
 #include "extras/http.h"
@@ -17,7 +19,7 @@
 #include "builtins/duker_module.h"
 #include "builtins/process.h"
 
-#include <duker/refs.h>
+
 
 duker_t *dk_create(duk_context *ctx) {
 
@@ -150,7 +152,6 @@ void dk_add_default_modules(duker_t *ctx) {
 }
 
 void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {
-  // Save duker_t in global stash
   duk_push_global_stash(ctx);
   duk_push_pointer(ctx, ptr);
   duk_put_prop_string(ctx, -2, name);

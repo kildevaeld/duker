@@ -42,6 +42,9 @@ option(CURL_STATICLIB "Set to ON to build libcurl with static linking." ON)
 set(BUILD_TESTING OFF CACHE BOOL "test")
 add_subdirectory(vendor/curl)
 
+## Worker Pool
+include_directories(vendor/c-thread-pool)
+
 
 add_subdirectory(src)
 add_subdirectory(example)

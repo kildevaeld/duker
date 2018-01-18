@@ -1,17 +1,21 @@
 #include "type.h"
 #include <duker/pool.h>
 #include <pthread.h>
+#include <thpool.h>
+
 
 struct duker_pool_s {
   duker_t **ctxs;
   int c_idle;
   int c_inuse;
   pthread_mutex_t mutex;
+  threadpool thpool;
 };
 
 struct duker_pool_task {
   duker_pool_t *pool;
   const char *script;
+  
 };
 
 static duker_t *take_ctx(duker_pool_t *pool) {
@@ -43,6 +47,8 @@ duker_pool_t *dk_create_pool(int number) {
   while (--number >= 0) {
     pool->ctxs[number] = dk_create(NULL);
   }
+
+  pool->thpool = thpool_init(number);
 
   return pool;
 }
