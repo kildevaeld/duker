@@ -86,8 +86,7 @@ void dk_free_pool(duker_pool_t *p) {
   thpool_wait(p->thpool);
   thpool_destroy(p->thpool);
   while (p->c_idle--) {
-    printf("free \n");
-    free(p->ctxs[p->c_idle]);
+    dk_free(p->ctxs[p->c_idle]);
   }
   free(p->ctxs);
   free(p);

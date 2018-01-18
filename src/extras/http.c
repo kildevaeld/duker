@@ -54,6 +54,7 @@ static duk_ret_t http_get(duk_context *ctx) {
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &WriteMemoryCallback);
     // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);

@@ -4,9 +4,9 @@
 #include <csystem/file.h>
 #include <csystem/path.h>
 #include <duker/duker.h>
+#include <duker/refs.h>
 #include <duktape.h>
 #include <stdlib.h>
-#include <duker/refs.h>
 
 // Modules
 #include "extras/crypto.h"
@@ -18,8 +18,6 @@
 #include "builtins/duker_console.h"
 #include "builtins/duker_module.h"
 #include "builtins/process.h"
-
-
 
 duker_t *dk_create(duk_context *ctx) {
 
@@ -41,10 +39,11 @@ duker_t *dk_create(duk_context *ctx) {
   d->modules = NULL;
 
   // Save duker_t in global stash
-  duk_push_global_stash(d->ctx);
+  /*duk_push_global_stash(d->ctx);
   duk_push_pointer(d->ctx, (void *)d);
   duk_put_prop_string(d->ctx, -2, "duker");
-  duk_pop(d->ctx);
+  duk_pop(d->ctx);*/
+  dk_stash_set_ptr(d->ctx, "duker", d);
 
   dk_ref_setup(d->ctx);
 
@@ -64,6 +63,7 @@ void dk_free(duker_t *d) {
   }
 
   free_modules(d);
+  dk_stash_rm_ptr(d->ctx, "duker");
   if (d->_c)
     duk_destroy_heap(d->ctx);
   free(d);
@@ -160,7 +160,22 @@ void dk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr) {
 void *dk_stash_get_ptr(duk_context *ctx, const char *name) {
   duk_push_global_stash(ctx);
   duk_get_prop_string(ctx, -1, name);
+  if (duk_is_null_or_undefined(ctx, -1)) {
+    return NULL;
+  }
   void *c = duk_to_pointer(ctx, -1);
   duk_pop_2(ctx);
   return c;
+}
+
+void *dk_stash_rm_ptr(duk_context *ctx, const char *name) {
+  void *out = dk_stash_get_ptr(ctx, name);
+  if (out == NULL)
+    return out;
+
+  duk_push_global_stash(ctx);
+  duk_del_prop_string(ctx, -1, name);
+  duk_pop(ctx);
+
+  return out;
 }
