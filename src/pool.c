@@ -44,6 +44,7 @@ static void worker_thread(struct duker_pool_task *task) {
 
 
 
+  // Cleaning
   put_ctx(task->pool, ctx);
   free(task);
 
