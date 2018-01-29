@@ -37,6 +37,7 @@ target_link_libraries(duker
     mbedcrypto
     pthread
     zlibstatic
+    uv
 )
 
 

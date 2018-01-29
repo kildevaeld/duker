@@ -1,3 +1,4 @@
+#include "../src/uv/uv-module.h"
 #include <duker/duker.h>
 #include <duker/pool.h>
 #include <stdio.h>
@@ -11,10 +12,15 @@ static int run_single(const char *path) {
     return 1;
   };
 
-  dk_add_default_modules(d);
+  uv_loop_t *loop = uv_default_loop();
+
+  // dk_add_default_modules(d);
+  dk_register_module_uv(d, loop);
 
   duker_err_t *err = NULL;
   duk_ret_t ret = dk_eval_path(d, path, &err);
+
+  uv_run(loop, UV_RUN_DEFAULT);
 
   if (ret != DUK_EXEC_SUCCESS) {
     printf("error %s\n", err->message);
@@ -23,9 +29,15 @@ static int run_single(const char *path) {
   dk_free(d);
 }
 
+static duker_t *create_ctx() {
+  duker_t *ctx = dk_create(NULL);
+  dk_register_module_uv(ctx, uv_loop_new());
+  return ctx;
+}
+
 static int run_pool(const char **path, size_t count, int n) {
 
-  duker_pool_t *pool = dk_create_pool_default(4);
+  duker_pool_t *pool = dk_create_pool(4, create_ctx, NULL);
   int i = 0;
   while (i < count) {
     dk_pool_add_path(pool, path[i]);

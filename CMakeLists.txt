@@ -53,8 +53,14 @@ include_directories(vendor/c-thread-pool)
 
 add_subdirectory(src)
 
+add_subdirectory(vendor/uvhttp)
+include_directories(vendor/uvhttp/include)
+include_directories(vendor/uvhttp/vendor/libuv/include)
+add_subdirectory(src/uv)
+
 
 add_subdirectory(example)
+
 
 if(DUKER_BUILD_TEST)
 	include(CTest)

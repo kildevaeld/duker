@@ -25,3 +25,6 @@
 [submodule "vendor/c-thread-pool"]
 	path = vendor/c-thread-pool
 	url = git@github.com:Pithikos/C-Thread-Pool.git
+[submodule "vendor/uvhttp"]
+	path = vendor/uvhttp
+	url = git@github.com:kildevaeld/uvhttp
