@@ -1,5 +1,6 @@
 #include "uv-module.h"
 #include "fs.h"
+#include "promise.h"
 #include "timers.h"
 #include "types.h"
 #include <duker/refs.h>
@@ -10,6 +11,10 @@ int dk_register_module_uv(struct duker_s *ctx, uv_loop_t *loop) {
   dk_stash_set_ptr(ctx->ctx, kStashLoopKey, loop);
 
   init_timers(ctx, loop);
+
+  // dk_dump_context_stdout(ctx);
+  duk_eval_lstring(ctx->ctx, promise_js, promise_js_len);
+  duk_pop(ctx->ctx);
 
   add_module_fn(ctx, "fs", fs_init_module);
   // return add_module_fn(ctx, "fs", fs_module_init);

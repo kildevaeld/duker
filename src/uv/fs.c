@@ -130,8 +130,6 @@ static duk_ret_t fs_read_file(duk_context *ctx) {
   struct fbag *b = malloc(sizeof(struct fbag));
   b->ctx = ctx;
   b->ref = ref;
-  // b->output = ptr;
-  // b->output_len = 128;
   b->cursor = 0;
   b->buffer.base = malloc(sizeof(char) * 1024);
   b->buffer.len = 1024;

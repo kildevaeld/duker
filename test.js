@@ -35,7 +35,7 @@ console.log(new TextDecoder("utf-8").decode(zlib.unzip(out)));
 fs.writeFileSync('test2.gz', out);*/
 
 //const http = require('http');
-
+/*
 var js
 js = setInterval(function () {
     console.log('interfaval');
@@ -48,10 +48,43 @@ setTimeout(function () {
     clearInterval(js);
 }, 10000);
 
+console.log(Promise)*/
 
+const _slice = Array.prototype.slice;
+
+const wrap = function (obj) {
+
+    for (var n in obj) {
+        if (typeof obj[n] !== 'function') continue;
+
+        obj[n] = (function (fn) {
+            return function () {
+
+                const args = _slice.call(arguments);
+
+                return new Promise(function (res, rej) {
+                    console.log('raprprapraprap', args)
+                    args.push(function (err, result) {
+                        if (err) return rej(err);
+                        res(result);
+                    })
+                    console.log('raprap')
+                    fn.apply(obj, args);
+                })
+            }
+        })(obj[n]);
+    }
+
+    return obj;
+}
 
 var fs = require('fs');
 
-fs.readFile('../test.js', function (err, result) {
+fs = wrap(fs);
+console.log(Promise)
+fs.readFile('../test.js').then(function (result) {
+    console.log('success');
     //console.log(new TextDecoder("utf-8").decode(result));
+}).catch(function (e) {
+    console.log(e.message);
 })
