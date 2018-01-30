@@ -38,5 +38,20 @@ fs.writeFileSync('test2.gz', out);*/
 
 var js
 js = setInterval(function () {
-    console.log('function', js);
-}, 100);
+    console.log('interfaval');
+}, 1000);
+
+
+console.log('function', js);
+setTimeout(function () {
+    console.log('out')
+    clearInterval(js);
+}, 10000);
+
+
+
+var fs = require('fs');
+
+fs.readFile('../test.js', function (err, result) {
+    //console.log(new TextDecoder("utf-8").decode(result));
+})

@@ -2,24 +2,30 @@
 #include <duker/refs.h>
 #include <stdbool.h>
 #include <uv.h>
-struct bag_ {
+
+struct tbag_ {
   int ref;
+  int tref;
   duk_context *ctx;
   int repeat;
 };
 
 static void callback(uv_timer_t *t) {
-  struct bag_ *b = (struct bag_ *)t->data;
+  struct tbag_ *b = (struct tbag_ *)t->data;
 
-  if (!b->repeat)
-    uv_timer_stop(t);
+  duk_idx_t top = duk_get_top_index(b->ctx);
   dk_push_ref(b->ctx, b->ref);
-  if (!duk_is_function(b->ctx, -1))
-    printf("not a function!");
-  duk_call(b->ctx, 0);
 
-  if (!b->repeat)
+  duk_call(b->ctx, 0);
+  if (duk_get_top_index(b->ctx) > top)
+    duk_pop(b->ctx);
+
+  if (!b->repeat) {
+    uv_timer_stop(t);
+    dk_unref(b->ctx, b->ref);
+    dk_unref(b->ctx, b->tref);
     free(b);
+  }
 }
 
 static int push_timer(duk_context *ctx, uv_loop_t *loop, int ref, int timeout,
@@ -28,8 +34,13 @@ static int push_timer(duk_context *ctx, uv_loop_t *loop, int ref, int timeout,
   uv_timer_t *timer_req = duk_push_fixed_buffer(ctx, sizeof(uv_timer_t));
   uv_timer_init(loop, timer_req);
 
-  struct bag_ *b = malloc(sizeof(struct bag_));
+  int tref = dk_ref(ctx);
+  duk_pop(ctx);
+  duk_push_int(ctx, tref);
+
+  struct tbag_ *b = malloc(sizeof(struct tbag_));
   b->ref = ref;
+  b->tref = tref;
   b->ctx = ctx;
   b->repeat = repeated ? timeout : 0;
 
@@ -52,36 +63,51 @@ static duk_ret_t create_timeout(duk_context *ctx) {
     timeout = duk_require_int(ctx, 1);
   }
 
+  int magic = duk_get_current_magic(ctx);
+
   duk_dup(ctx, 0);
   int ref = dk_ref(ctx);
-  return push_timer(ctx, loop, ref, timeout, false);
+  return push_timer(ctx, loop, ref, timeout, magic == 1);
 }
 
-static duk_ret_t create_interval(duk_context *ctx) {
-  uv_loop_t *loop = dk_stash_get_ptr(ctx, "uv_loop");
+static duk_ret_t clear_timeout(duk_context *ctx) {
 
-  if (!duk_is_function(ctx, 0)) {
-    duk_type_error(ctx, "first params must be a function");
+  int ref = duk_require_int(ctx, 0);
+  dk_push_ref(ctx, ref);
+
+  duk_size_t size;
+  uv_timer_t *timer = duk_require_buffer(ctx, -1, &size);
+
+  if (!timer || size != sizeof(uv_timer_t)) {
+    return 0;
   }
 
-  duk_dup(ctx, 0);
-  int ref = dk_ref(ctx);
+  struct tbag_ *b = (struct tbag_ *)timer->data;
+  dk_unref(ctx, b->ref);
+  dk_unref(ctx, b->tref);
+  free(b);
 
-  int timeout = 0;
-  if (duk_is_number(ctx, 1)) {
-    timeout = duk_require_int(ctx, 1);
-  }
+  uv_timer_stop(timer);
 
-  return push_timer(ctx, loop, ref, timeout, true);
+  return 0;
 }
 
 int init_timers(duker_t *ctx, uv_loop_t *loop) {
   duk_push_global_object(ctx->ctx);
 
   duk_push_c_function(ctx->ctx, create_timeout, 2);
+  duk_set_magic(ctx->ctx, -1, 0);
   duk_put_prop_string(ctx->ctx, -2, "setTimeout");
-  duk_push_c_function(ctx->ctx, create_interval, 2);
+
+  duk_push_c_function(ctx->ctx, create_timeout, 2);
+  duk_set_magic(ctx->ctx, -1, 1);
   duk_put_prop_string(ctx->ctx, -2, "setInterval");
+
+  duk_push_c_function(ctx->ctx, clear_timeout, 1);
+  duk_put_prop_string(ctx->ctx, -2, "clearTimeout");
+
+  duk_push_c_function(ctx->ctx, clear_timeout, 1);
+  duk_put_prop_string(ctx->ctx, -2, "clearInterval");
 
   duk_pop(ctx->ctx);
 

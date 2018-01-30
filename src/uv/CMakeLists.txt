@@ -2,6 +2,7 @@
 set(SOURCES
     uv-module.c
     timers.c
+    fs.c
 )
 
 
