@@ -1,12 +1,12 @@
-#include "uv-module.h"
 #include "fs.h"
 #include "promise.h"
 #include "timers.h"
 #include "types.h"
 #include <duker/refs.h>
+#include <duker/uv/uv-module.h>
 
 const char *kStashLoopKey = "uv_loop";
-int dk_register_module_uv(struct duker_s *ctx, uv_loop_t *loop) {
+int dk_register_module_uv(duker_t *ctx, uv_loop_t *loop) {
 
   dk_stash_set_ptr(ctx->ctx, kStashLoopKey, loop);
 
@@ -22,6 +22,6 @@ int dk_register_module_uv(struct duker_s *ctx, uv_loop_t *loop) {
   return 0;
 }
 
-uv_loop_t *dk_module_uv_loop(struct duker_s *ctx) {
+uv_loop_t *dk_module_uv_loop(duker_t *ctx) {
   return dk_stash_get_ptr(ctx->ctx, kStashLoopKey);
 }

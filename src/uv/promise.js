@@ -313,6 +313,7 @@ Promise = (function () {
     }
 
     Promise.wrap = wrap;
+    const _slice = Array.prototype.slice;
 
     function wrap(obj) {
         for (var n in obj) {

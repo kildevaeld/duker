@@ -1,6 +1,6 @@
-#include "../src/uv/uv-module.h"
 #include <duker/duker.h>
 #include <duker/pool.h>
+#include <duker/uv/uv-module.h>
 #include <stdio.h>
 
 // Run a single file, one time
@@ -14,8 +14,8 @@ static int run_single(const char *path) {
 
   uv_loop_t *loop = uv_default_loop();
 
-  // dk_add_default_modules(d);
   dk_register_module_uv(d, loop);
+  dk_add_default_modules(d);
 
   duker_err_t *err = NULL;
   duk_ret_t ret = dk_eval_path(d, path, &err);

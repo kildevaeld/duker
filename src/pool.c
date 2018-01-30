@@ -1,5 +1,4 @@
 #include "type.h"
-#include "uv/uv-module.h"
 #include <duker/pool.h>
 #include <pthread.h>
 #include <thpool.h>
@@ -54,11 +53,7 @@ static void worker_thread(void *data) {
     dk_free_err(err);
   }
 
-  uv_loop_t *loop = dk_stash_get_ptr(ctx->ctx, "uv_loop");
-
-  uv_run(loop, UV_RUN_DEFAULT);
-
-  // Cleaning
+    // Cleaning
   put_ctx(task->pool, ctx);
 
   free(task->script);
