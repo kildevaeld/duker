@@ -1,24 +1,11 @@
-const o = require('./other');
-
-o.test();
-
-const fs = require('fs');
-
-const buffer = fs.readFileSync('../test.js');
-
-fs.writeFileSync("rapper.json", JSON.stringify({
-    Hello: 'world'
-}));
-
-try {
-    fs.writeFileSync("test", new Buffer(JSON.stringify({
-        Hello: 'world'
-    })));
-} catch (e) {
-    console.error(e);
-}
+var fs = require('fs');
 
 
-fs.mkdirSync("test_rapper", 0755)
-
-console.log(buffer);
+fs = Promise.wrap(fs);
+console.log(Promise)
+fs.readFile('../test.js').then(function (result) {
+    console.log('success', process.cwd());
+    //console.log(new TextDecoder("utf-8").decode(result));
+}).catch(function (e) {
+    console.log(e.message);
+})

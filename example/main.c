@@ -1,52 +1,66 @@
 #include <duker/duker.h>
+#include <duker/pool.h>
+#include <duker/uv/uv-module.h>
 #include <stdio.h>
 
-static duk_ret_t plugin(duk_context *ctx) {
-
-  printf("hello dig\n");
-  duk_idx_t idx = duk_push_object(ctx);
-
-  duk_push_string(ctx, "Hello, world");
-  duk_put_prop_string(ctx, idx, "test");
-  // dk_dump_context_stdout(ctx);
-  return 1;
-}
-
-int main(int argc, const char **argv) {
-
-  duk_context *ctx = duk_create_heap_default();
-  if (!ctx) {
-    printf("rapper\n");
-    return 0;
-  }
+// Run a single file, one time
+static int run_single(const char *path) {
 
   duker_t *d;
-  if (!(d = dk_create(ctx))) {
+  if (!(d = dk_create(NULL))) {
     printf("could not init duk\n");
     return 1;
   };
 
+  uv_loop_t *loop = uv_default_loop();
+
+  dk_register_module_uv(d, loop);
   dk_add_default_modules(d);
 
-  // dk_add_module_fn(d, "./other.js", plugin);
+  duker_err_t *err = NULL;
+  duk_ret_t ret = dk_eval_path(d, path, &err);
 
-  if (argc > 1) {
-    const char *path = argv[1];
+  uv_run(loop, UV_RUN_DEFAULT);
 
-    duk_ret_t ret = dk_eval_path(d, path);
-    if (ret != DUK_EXEC_SUCCESS) {
-      if (duk_get_prop_string(ctx, -1, "stack")) {
-        duk_replace(ctx, -2);
-      } else {
-        duk_pop(ctx);
-      }
-      printf("--> %s\n", duk_safe_to_string(ctx, -1));
-      duk_pop(ctx);
-    }
+  if (ret != DUK_EXEC_SUCCESS) {
+    printf("error %s\n", err->message);
+    dk_free_err(err);
+  }
+  dk_free(d);
+}
+
+static duker_t *create_ctx() {
+  duker_t *ctx = dk_create(NULL);
+  dk_register_module_uv(ctx, uv_loop_new());
+  return ctx;
+}
+
+static int run_pool(const char **path, size_t count, int n) {
+
+  duker_pool_t *pool = dk_create_pool(4, create_ctx, NULL);
+  int i = 0;
+  while (i < count) {
+    dk_pool_add_path(pool, path[i]);
+    i++;
   }
 
-  dk_free(d);
-  // duk_eval_string(ctx, "console.log('Hello, World')");
-  // printf("result %d\n", duk_get_int(ctx, -1));
+  dk_pool_wait(pool);
+  dk_free_pool(pool);
+
+  return 0;
+}
+
+int main(int argc, const char **argv) {
+
+  if (argc == 1) {
+    fprintf(stderr, "usage: duker [-pN] <path>\n");
+    return EXIT_FAILURE;
+  } else if (argc == 2 || strncmp(argv[1], "-p", 2) != 0) {
+    return run_single(argv[1]);
+  } else if (strncmp(argv[1], "-p", 2) == 0) {
+    int n = 4;
+    return run_pool(&argv[2], argc - 2, n);
+  }
+
   return 0;
 }

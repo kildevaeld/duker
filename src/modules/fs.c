@@ -2,6 +2,7 @@
 #include "../module.h"
 #include <csystem/file.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 static duk_ret_t fs_read_file(duk_context *ctx) {
 
