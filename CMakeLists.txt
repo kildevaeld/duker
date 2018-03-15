@@ -22,15 +22,12 @@ include_directories(
 ##include_directories(vendor/boringssl/include)
 ##add_subdirectory(vendor/boringssl)
 
-## Crypto/TLS
-include_directories(vendor/mbedtls/include)
-option(ENABLE_PROGRAMS "Build mbed TLS programs." OFF)
-option(ENABLE_TESTING "Build mbed TLS tests." OFF)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-## Zlib
-add_subdirectory(vendor/zlib)
-include_directories(vendor/zlib)
-add_subdirectory(vendor/mbedtls)
+find_package(libuv)
+find_package(mbedtls)
+find_package(zlib)
+
 
 ## Curl
 if (DUKER_BUILD_HTTP)
@@ -51,11 +48,12 @@ endif(DUKER_BUILD_HTTP)
 include_directories(vendor/c-thread-pool)
 
 
+
 add_subdirectory(src)
 
-add_subdirectory(vendor/uvhttp)
-include_directories(vendor/uvhttp/include)
-include_directories(vendor/uvhttp/vendor/libuv/include)
+##add_subdirectory(vendor/uvhttp)
+##include_directories(vendor/uvhttp/include)
+#include_directories(vendor/uvhttp/vendor/libuv/include)
 add_subdirectory(src/uv)
 
 

@@ -5,6 +5,5 @@ set(SOURCES
     fs.c
 )
 
-
 add_library(duker_uv ${SOURCES})
-target_link_libraries(duker_uv uvhttp uv)
+target_link_libraries(duker_uv ${LIBUV_LIBRARIES})

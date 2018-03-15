@@ -84,20 +84,20 @@ static duk_ret_t fs_module_init(duk_context *ctx) {
   duk_ret_t idx = duk_push_object(ctx);
 
   duk_push_c_function(ctx, fs_read_file, 2);
-  duk_put_prop_string(ctx, idx, "readFileSync");
+  duk_put_prop_string(ctx, idx, "readFile");
 
   duk_push_c_function(ctx, fs_write_file, 2);
-  duk_put_prop_string(ctx, idx, "writeFileSync");
+  duk_put_prop_string(ctx, idx, "writeFile");
 
   duk_push_c_function(ctx, fs_read_dir, 1);
-  duk_put_prop_string(ctx, idx, "readdirSync");
+  duk_put_prop_string(ctx, idx, "readdir");
 
   duk_push_c_function(ctx, fs_mkdir, 2);
-  duk_put_prop_string(ctx, idx, "mkdirSync");
+  duk_put_prop_string(ctx, idx, "mkdir");
 
   return 1;
 }
 
 int dk_register_module_fs(struct duker_s *ctx) {
-  return add_module_fn(ctx, "fs", fs_module_init);
+  return add_module_fn(ctx, "filesystem", fs_module_init);
 }

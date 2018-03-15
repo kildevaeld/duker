@@ -34,9 +34,9 @@ set(SOURCES
 add_library(duker ${SOURCES})
 target_link_libraries(duker
     csystem 
-    mbedcrypto
+    ${LIBMBEDTLS_LIBRARIES}
     pthread
-    zlibstatic
+    ${LIBZLIB_LIBRARIES}
 )
 
 
