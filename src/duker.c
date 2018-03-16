@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 // Modules
-#include "extras/crypto.h"
+//#include "extras/crypto.h"
 
 #if defined(DUKER_USE_HTTP)
 #include "extras/http.h"
@@ -146,7 +146,7 @@ void dk_add_default_modules(duker_t *ctx) {
   ctx->_m = 1;
   dk_register_module_path(ctx);
   dk_register_module_fs(ctx);
-  dk_register_module_crypto(ctx);
+  // dk_register_module_crypto(ctx);
   dk_register_module_zlib(ctx);
 
 #if defined(DUKER_USE_HTTP)

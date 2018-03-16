@@ -20,7 +20,7 @@ set(SOURCES
     ${BUILTINS}
     ${MODULES}
 
-    extras/crypto.c
+    #extras/crypto.c
     extras/zlib.c
     extras/gzip.c
 
@@ -34,7 +34,7 @@ set(SOURCES
 add_library(duker ${SOURCES})
 target_link_libraries(duker
     csystem 
-    ${LIBMBEDTLS_LIBRARIES}
+    #${LIBMBEDTLS_LIBRARIES}
     pthread
     ${LIBZLIB_LIBRARIES}
 )
