@@ -1,4 +1,4 @@
-#include "log.c"
+#include "log.h"
 #include "module.h"
 #include "type.h"
 #include <csystem/file.h>

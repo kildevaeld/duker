@@ -6,6 +6,8 @@
 #include <csystem/path.h>
 #include <csystem/standardpaths.h>
 
+#include <dlfcn.h>
+
 static const char *get_main(duk_context *ctx) {
 
   duk_push_global_stash(ctx);
@@ -74,6 +76,24 @@ static duk_ret_t cb_resolve_module(duk_context *ctx) {
   return 1;
 }
 
+static duk_ret_t push_lib(duk_context *ctx, void *handle, const char *module_id,
+                          bool *ok) {
+  dlerror();
+  dk_module_initializer hello =
+      (dk_module_initializer)dlsym(handle, "init_module");
+  const char *dlsym_error = dlerror();
+  if (dlsym_error) {
+    dlclose(handle);
+    return duk_type_error(ctx, "cannot load module '%s': %s", module_id,
+                          dlsym_error);
+  }
+  if (ok)
+    *ok = true;
+  duk_push_c_function(ctx, hello, 0);
+
+  return 1;
+}
+
 static duk_ret_t cb_load_module(duk_context *ctx) {
   const char *filename;
   const char *module_id;
@@ -87,15 +107,34 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
   struct modules_bag_s *bag = get_module(vm, filename);
 
   if (bag != NULL) {
-    if (bag->type == FN_MODTYPE) {
+    switch (bag->type) {
+    case FN_MODTYPE:
       duk_push_c_function(ctx, bag->module.func, 0);
-    } else {
+      break;
+    case STR_MODTYPE:
       duk_push_string(ctx, bag->module.script);
+      break;
+    case LIB_MODTYPE: {
+      push_lib(ctx, bag->module.handle, filename, NULL);
+    } break;
     }
   } else {
 
     if (!cs_file_exists(filename)) {
       goto fail;
+    }
+    int iexts;
+    cs_path_ext(filename, &iexts);
+    if (strcmp(filename + iexts, ".dylib") == 0) {
+      void *handle = dlopen(filename, RTLD_LAZY);
+      if (!handle)
+        goto fail;
+      bool ok;
+      if (push_lib(ctx, handle, filename, &ok) && ok) {
+        add_module_lib(ctx, filename, handle);
+      }
+
+      return 1;
     }
 
     int size = 0;
@@ -146,6 +185,27 @@ int add_module_fn(struct duker_s *ctx, const char *n,
   return 0;
 }
 
+int add_module_lib(struct duker_s *ctx, const char *n, void *handle) {
+
+  struct modules_bag_s *m;
+
+  HASH_FIND_STR(ctx->modules, n, m);
+  if (m != NULL) {
+    return 1;
+  }
+
+  m = (struct modules_bag_s *)malloc(sizeof(struct modules_bag_s));
+  m->name = (char *)malloc(sizeof(char) * strlen(n) + 1);
+  strcpy(m->name, n);
+
+  m->type = LIB_MODTYPE;
+  m->module.handle = handle;
+  log_debug("registered handle %s", n);
+  HASH_ADD_STR(ctx->modules, name, m);
+
+  return 0;
+}
+
 int add_module_str(struct duker_s *ctx, const char *name, const char *content) {
   struct modules_bag_s *m;
   HASH_FIND_STR(ctx->modules, name, m);
@@ -182,6 +242,10 @@ void free_modules(duker_t *ctx) {
     HASH_DEL(ctx->modules, current);
     if (current->type == STR_MODTYPE) {
       free(current->module.script);
+      current->module.script = NULL;
+    } else if (current->type == LIB_MODTYPE) {
+      dlclose(current->module.handle);
+      current->module.handle = NULL;
     }
     free(current);
   }

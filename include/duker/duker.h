@@ -1,14 +1,17 @@
 #pragma once
 #include <duktape.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+typedef bool (*dk_module_resolver)(duk_context *ctx, const char *filename);
+
 typedef struct duker_s duker_t;
 
 typedef struct duker_config_s {
-
+  dk_module_resolver resolver;
 } duker_config_t;
 
 typedef struct duker_err_s {

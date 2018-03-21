@@ -24,14 +24,14 @@ set(SOURCES
     extras/zlib.c
     extras/gzip.c
 
-    extras/http.c
+    #extras/http.c
 
     ${PROJECT_ROOT}/vendor/c-thread-pool/thpool.c
     pool.c
 
 )
 
-add_library(duker ${SOURCES})
+add_library(duker SHARED ${SOURCES})
 target_link_libraries(duker
     csystem 
     #${LIBMBEDTLS_LIBRARIES}
