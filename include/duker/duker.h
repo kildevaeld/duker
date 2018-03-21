@@ -23,7 +23,14 @@ void dk_free(duker_t *);
 
 duk_context *dk_duk_context(duker_t *);
 
+/**
+ * Evaluate a path
+ */
 duk_ret_t dk_eval_path(duker_t *, const char *, duker_err_t **err);
+
+/**
+ * Evaluate script
+ */
 duk_ret_t dk_eval_script(duker_t *, const char *path, const char *script);
 void dk_free_err(duker_err_t *);
 int dk_add_module_fn(duker_t *ctx, const char *name,
