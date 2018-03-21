@@ -76,6 +76,13 @@ static duk_ret_t cb_resolve_module(duk_context *ctx) {
   return 1;
 }
 
+static bool is_dynamic_lib(const char *filename) {
+  int iexts;
+  cs_path_ext(filename, &iexts);
+  return strcmp(filename + iexts, ".dylib") == 0 ||
+         strcmp(filename + iexts, ".so") == 0;
+}
+
 static duk_ret_t push_lib(duk_context *ctx, void *handle, const char *module_id,
                           bool *ok) {
   dlerror();
@@ -123,15 +130,14 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
     if (!cs_file_exists(filename)) {
       goto fail;
     }
-    int iexts;
-    cs_path_ext(filename, &iexts);
-    if (strcmp(filename + iexts, ".dylib") == 0) {
+
+    if (is_dynamic_lib(filename)) {
       void *handle = dlopen(filename, RTLD_LAZY);
       if (!handle)
         goto fail;
       bool ok;
       if (push_lib(ctx, handle, filename, &ok) && ok) {
-        add_module_lib(ctx, filename, handle);
+        add_module_lib(vm, filename, handle);
       }
 
       return 1;
