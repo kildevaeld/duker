@@ -29,6 +29,9 @@ set(SOURCES
     ${PROJECT_ROOT}/vendor/c-thread-pool/thpool.c
     pool.c
 
+    # Modules
+    event-emitter.c
+
 )
 
 add_library(duker SHARED ${SOURCES})

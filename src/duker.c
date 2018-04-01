@@ -23,6 +23,8 @@
 #include "builtins/duker_module.h"
 #include "builtins/process.h"
 
+#include "event-emitter.h"
+
 duker_t *dk_create(duk_context *ctx) {
 
   duker_t *d = malloc(sizeof(duker_t));
@@ -148,6 +150,8 @@ void dk_add_default_modules(duker_t *ctx) {
   dk_register_module_fs(ctx);
   // dk_register_module_crypto(ctx);
   dk_register_module_zlib(ctx);
+
+  dk_register_module_event_emitter(ctx);
 
 #if defined(DUKER_USE_HTTP)
   dk_register_module_http(ctx);
