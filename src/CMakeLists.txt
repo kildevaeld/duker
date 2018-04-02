@@ -14,6 +14,8 @@ set(SOURCES
     schema.c
     refs.c
     #utils.c
+    helpers.c
+    duker_console.c
    
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 
@@ -22,12 +24,12 @@ set(SOURCES
 
     #extras/crypto.c
     extras/zlib.c
-    extras/gzip.c
+    #extras/gzip.c
 
     #extras/http.c
 
-    ${PROJECT_ROOT}/vendor/c-thread-pool/thpool.c
-    pool.c
+    #${PROJECT_ROOT}/vendor/c-thread-pool/thpool.c
+    #pool.c
 
     # Modules
     event-emitter.c

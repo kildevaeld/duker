@@ -98,6 +98,6 @@ static duk_ret_t fs_module_init(duk_context *ctx) {
   return 1;
 }
 
-int dk_register_module_fs(struct duker_s *ctx) {
+int dukext_register_module_fs(struct duker_s *ctx) {
   return add_module_fn(ctx, "filesystem", fs_module_init);
 }

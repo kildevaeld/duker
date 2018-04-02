@@ -83,7 +83,7 @@ static void init_env(duk_context *ctx) {
   duk_push_proxy(ctx, 0);
 }
 
-void dk_module_process_init(struct duker_s *ctx) {
+void dukext_module_process_init(struct duker_s *ctx) {
   duk_push_global_object(ctx->ctx);
   duk_idx_t idx = duk_push_object(ctx->ctx);
 

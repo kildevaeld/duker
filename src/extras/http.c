@@ -86,13 +86,13 @@ static duk_ret_t initialize_http_module(duk_context *ctx) {
   return 1;
 }
 
-int dk_register_module_http(struct duker_s *ctx) {
+int dukext_register_module_http(struct duker_s *ctx) {
   curl_global_init(CURL_GLOBAL_ALL);
-  dk_add_module_fn(ctx, "http", initialize_http_module);
+  dukext_add_module_fn(ctx, "http", initialize_http_module);
   return 1;
 }
 
-int dk_unregister_module_http(struct duker_s *ctx) {
+int dukext_unregister_module_http(struct duker_s *ctx) {
   curl_global_cleanup();
   return 1;
 }

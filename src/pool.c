@@ -48,12 +48,12 @@ static void worker_thread(void *data) {
   duk_pop(ctx->ctx);
 
   duker_err_t *err = NULL;
-  if (dk_eval_path(ctx, task->script, &err) != DUK_EXEC_SUCCESS) {
+  if (dukext_eval_path(ctx, task->script, &err) != DUK_EXEC_SUCCESS) {
     fprintf(stderr, "error: path %s: %s", task->script, err->message);
-    dk_free_err(err);
+    dukext_free_err(err);
   }
 
-    // Cleaning
+  // Cleaning
   put_ctx(task->pool, ctx);
 
   free(task->script);
@@ -64,13 +64,14 @@ static duk_context *create_context(void *d) {
   return duk_create_heap_default();
 }
 
-duker_pool_t *dk_create_pool_default(int number) {
-  duk_context *ctx = dk_create_pool(number, create_context, NULL);
-  dk_add_default_modules(ctx);
+duker_pool_t *dukext_create_pool_default(int number) {
+  duk_context *ctx = dukext_create_pool(number, create_context, NULL);
+  dukext_add_default_modules(ctx);
   return ctx;
 }
 
-duker_pool_t *dk_create_pool(int number, dk_context_creator fn, void *udata) {
+duker_pool_t *dukext_create_pool(int number, dukext_context_creator fn,
+                                 void *udata) {
   duker_pool_t *pool = malloc(sizeof(duker_pool_t));
   pool->ctxs = malloc(sizeof(duker_t) * number);
   pool->c_idle = number;
@@ -86,21 +87,21 @@ duker_pool_t *dk_create_pool(int number, dk_context_creator fn, void *udata) {
   return pool;
 }
 
-void dk_pool_wait(duker_pool_t *pool) { thpool_wait(pool->thpool); }
+void dukext_pool_wait(duker_pool_t *pool) { thpool_wait(pool->thpool); }
 
-void dk_pool_start(duker_pool_t *pool) { thpool_resume(pool->thpool); }
+void dukext_pool_start(duker_pool_t *pool) { thpool_resume(pool->thpool); }
 
-void dk_free_pool(duker_pool_t *p) {
+void dukext_free_pool(duker_pool_t *p) {
   thpool_wait(p->thpool);
   thpool_destroy(p->thpool);
   while (p->c_idle--) {
-    dk_free(p->ctxs[p->c_idle]);
+    dukext_free(p->ctxs[p->c_idle]);
   }
   free(p->ctxs);
   free(p);
 }
 
-void dk_pool_add_path(duker_pool_t *pool, const char *path) {
+void dukext_pool_add_path(duker_pool_t *pool, const char *path) {
   struct duker_pool_task *task = malloc(sizeof(struct duker_pool_task));
   task->pool = pool;
   task->script = strdup(path);
@@ -108,4 +109,4 @@ void dk_pool_add_path(duker_pool_t *pool, const char *path) {
   thpool_add_work(pool->thpool, (void *)worker_thread, task);
 }
 
-void dk_pool_add_script(duker_pool_t *pool, const char *script) {}
+void dukext_pool_add_script(duker_pool_t *pool, const char *script) {}

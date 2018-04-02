@@ -72,6 +72,6 @@ static duk_ret_t path_module_init(duk_context *ctx) {
   return 1;
 }
 
-int dk_register_module_path(struct duker_s *ctx) {
+int dukext_register_module_path(struct duker_s *ctx) {
   return add_module_fn(ctx, "path", path_module_init);
 }

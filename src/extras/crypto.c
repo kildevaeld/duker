@@ -195,7 +195,7 @@ static duk_ret_t initialize_crypto_module(duk_context *ctx) {
   return 1;
 }
 
-int dk_register_module_crypto(struct duker_s *ctx) {
-  dk_add_module_fn(ctx, "crypto", initialize_crypto_module);
+int dukext_register_module_crypto(struct duker_s *ctx) {
+  dukext_add_module_fn(ctx, "crypto", initialize_crypto_module);
   return 1;
 }

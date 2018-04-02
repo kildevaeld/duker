@@ -20,8 +20,8 @@ static inline void clean_fbag(struct fbag *b) {
   if (!b)
     return;
   free(b->buffer.base);
-  dk_unref(b->ctx, b->ref);
-  dk_unref(b->ctx, b->bref);
+  dukext_unref(b->ctx, b->ref);
+  dukext_unref(b->ctx, b->bref);
   b->ctx = NULL;
   free(b);
 }
@@ -29,7 +29,7 @@ static inline void clean_fbag(struct fbag *b) {
 static void on_close_cb(uv_fs_t *req) {
   struct fbag *b = req->data;
   // push callback;
-  dk_push_ref(b->ctx, b->ref);
+  dukext_push_ref(b->ctx, b->ref);
 
   if (req->result < 0) {
     duk_push_error_object(b->ctx, DUK_ERR_ERROR, uv_strerror(req->result));
@@ -37,7 +37,7 @@ static void on_close_cb(uv_fs_t *req) {
     duk_push_undefined(b->ctx);
   }
 
-  dk_push_ref(b->ctx, b->bref);
+  dukext_push_ref(b->ctx, b->bref);
 
   duk_call(b->ctx, 2);
   duk_pop(b->ctx);
@@ -52,7 +52,7 @@ static void on_read_cb(uv_fs_t *req) {
   struct fbag *b = req->data;
 
   if (req->result < 0) {
-    dk_push_ref(b->ctx, b->ref);
+    dukext_push_ref(b->ctx, b->ref);
     duk_push_error_object(b->ctx, DUK_ERR_ERROR, uv_strerror(req->result));
     duk_push_undefined(b->ctx);
     duk_call(b->ctx, 2);
@@ -67,7 +67,7 @@ static void on_read_cb(uv_fs_t *req) {
     r->data = req->data;
 
     if (b->cursor + req->result >= b->output.len) {
-      dk_push_ref(b->ctx, b->bref);
+      dukext_push_ref(b->ctx, b->bref);
       b->output.base =
           duk_resize_buffer(b->ctx, -1, b->output.len + req->result + 1024);
       b->output.len += req->result + 1024;
@@ -93,7 +93,7 @@ static void on_open_cb(uv_fs_t *req) {
     b->fd = req->result;
     uv_fs_read(req->loop, r, req->result, &b->buffer, 1, -1, on_read_cb);
   } else {
-    dk_push_ref(b->ctx, b->ref);
+    dukext_push_ref(b->ctx, b->ref);
     duk_push_error_object(b->ctx, DUK_ERR_ERROR, uv_strerror(req->result));
     duk_push_undefined(b->ctx);
     duk_call(b->ctx, 2);
@@ -117,13 +117,13 @@ static duk_ret_t fs_read_file(duk_context *ctx) {
   }
 
   duk_dup(ctx, idx);
-  int ref = dk_ref(ctx);
+  int ref = dukext_ref(ctx);
 
   char *ptr = duk_push_dynamic_buffer(ctx, sizeof(char) * 1024);
 
-  int bidx = dk_ref(ctx);
+  int bidx = dukext_ref(ctx);
 
-  uv_loop_t *loop = dk_stash_get_ptr(ctx, kStashLoopKey);
+  uv_loop_t *loop = dukext_stash_get_ptr(ctx, kStashLoopKey);
 
   uv_fs_t *req = malloc(sizeof(uv_fs_t));
 

@@ -1,35 +1,12 @@
 #include "module.h"
 #include "builtins/duker_module.h"
+#include "helpers.h"
 #include "log.h"
 #include "type.h"
 #include <csystem/file.h>
 #include <csystem/path.h>
 #include <csystem/standardpaths.h>
-
 #include <dlfcn.h>
-
-static const char *get_main(duk_context *ctx) {
-
-  duk_push_global_stash(ctx);
-  duk_get_prop_string(ctx, -1,
-                      "\xff"
-                      "mainModule");
-
-  duk_get_prop_string(ctx, -1, "filename");
-  const char *c = duk_get_string(ctx, -1);
-
-  duk_pop_3(ctx);
-
-  return c;
-}
-
-static duker_t *get_duker(duk_context *ctx) {
-  duk_push_global_stash(ctx);
-  duk_get_prop_string(ctx, -1, "duker");
-  duker_t *c = (duker_t *)duk_to_pointer(ctx, -1);
-  duk_pop(ctx);
-  return c;
-}
 
 static duk_ret_t cb_resolve_module(duk_context *ctx) {
   const char *module_id;
@@ -85,9 +62,24 @@ static bool is_dynamic_lib(const char *filename) {
 
 static duk_ret_t push_lib(duk_context *ctx, void *handle, const char *module_id,
                           bool *ok) {
+
+  int i, xi;
+  int bret = cs_path_base(module_id, &i);
+  int eret = cs_path_ext(module_id + i, &xi);
+
+  if (strncmp(module_id + i, "lib", 3) == 0) {
+    bret -= 3;
+    i += 3;
+  }
+
+  int name_ln = bret - eret + 8;
+  char name[name_ln + 1];
+  strcpy(name, "dukopen_");
+  strncpy(name + 8, module_id + i, xi);
+  name[name_ln] = '\0';
+
   dlerror();
-  dk_module_initializer hello =
-      (dk_module_initializer)dlsym(handle, "init_module");
+  dk_module_initializer hello = (dk_module_initializer)dlsym(handle, name);
   const char *dlsym_error = dlerror();
   if (dlsym_error) {
     dlclose(handle);
@@ -115,13 +107,13 @@ static duk_ret_t cb_load_module(duk_context *ctx) {
 
   if (bag != NULL) {
     switch (bag->type) {
-    case FN_MODTYPE:
+    case DUKEXT_FN_TYPE:
       duk_push_c_function(ctx, bag->module.func, 0);
       break;
-    case STR_MODTYPE:
+    case DUKEXT_STR_TYPE:
       duk_push_string(ctx, bag->module.script);
       break;
-    case LIB_MODTYPE: {
+    case DUKEXT_LIB_TYPE: {
       push_lib(ctx, bag->module.handle, filename, NULL);
     } break;
     }
@@ -183,7 +175,7 @@ int add_module_fn(struct duker_s *ctx, const char *n,
   m->name = (char *)malloc(sizeof(char) * strlen(n) + 1);
   strcpy(m->name, n);
 
-  m->type = FN_MODTYPE;
+  m->type = DUKEXT_FN_TYPE;
   m->module.func = fn;
   log_debug("registered module %s", n);
   HASH_ADD_STR(ctx->modules, name, m);
@@ -204,7 +196,7 @@ int add_module_lib(struct duker_s *ctx, const char *n, void *handle) {
   m->name = (char *)malloc(sizeof(char) * strlen(n) + 1);
   strcpy(m->name, n);
 
-  m->type = LIB_MODTYPE;
+  m->type = DUKEXT_LIB_TYPE;
   m->module.handle = handle;
   log_debug("registered handle %s", n);
   HASH_ADD_STR(ctx->modules, name, m);
@@ -225,7 +217,7 @@ int add_module_str(struct duker_s *ctx, const char *name, const char *content) {
 
   m->module.script = (char *)malloc(sizeof(char) * strlen(content) + 1);
   strcpy(m->module.script, content);
-  m->type = STR_MODTYPE;
+  m->type = DUKEXT_STR_TYPE;
 
   log_debug("registered module %s", name);
   HASH_ADD_STR(ctx->modules, name, m);
@@ -246,10 +238,10 @@ void free_modules(duker_t *ctx) {
 
   HASH_ITER(hh, ctx->modules, current, tmp) {
     HASH_DEL(ctx->modules, current);
-    if (current->type == STR_MODTYPE) {
+    if (current->type == DUKEXT_STR_TYPE) {
       free(current->module.script);
       current->module.script = NULL;
-    } else if (current->type == LIB_MODTYPE) {
+    } else if (current->type == DUKEXT_LIB_TYPE) {
       dlclose(current->module.handle);
       current->module.handle = NULL;
     }

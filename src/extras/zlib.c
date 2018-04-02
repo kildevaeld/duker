@@ -1,5 +1,5 @@
 #include "zlib.h"
-#include "gzip.h"
+//#include "gzip.h"
 #include <stdbool.h>
 #include <string.h>
 #include <zlib.h>
@@ -152,9 +152,9 @@ static duk_ret_t initialize_zlib_module(duk_context *ctx) {
   return 1;
 }
 
-int dk_register_module_zlib(struct duker_s *ctx) {
+int dukext_register_module_zlib(struct duker_s *ctx) {
 
-  dk_add_module_fn(ctx, "zlib", initialize_zlib_module);
+  dukext_add_module_fn(ctx, "zlib", initialize_zlib_module);
 
   return 1;
 }

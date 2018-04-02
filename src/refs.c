@@ -1,7 +1,7 @@
 #include <duker/refs.h>
 
 // Create a global array refs in the heap stash.
-void dk_ref_setup(duk_context *ctx) {
+void dukext_ref_setup(duk_context *ctx) {
   duk_push_heap_stash(ctx);
 
   // Create a new array with one `0` at index `0`.
@@ -15,7 +15,7 @@ void dk_ref_setup(duk_context *ctx) {
 }
 
 // like luaL_ref, but assumes storage in "refs" property of heap stash
-int dk_ref(duk_context *ctx) {
+int dukext_ref(duk_context *ctx) {
   int ref;
   if (duk_is_undefined(ctx, -1)) {
     duk_pop(ctx);
@@ -55,7 +55,7 @@ int dk_ref(duk_context *ctx) {
   return ref;
 }
 
-void dk_push_ref(duk_context *ctx, int ref) {
+void dukext_push_ref(duk_context *ctx, int ref) {
   if (!ref) {
     duk_push_undefined(ctx);
     return;
@@ -70,7 +70,7 @@ void dk_push_ref(duk_context *ctx, int ref) {
   duk_remove(ctx, -2);
 }
 
-void dk_unref(duk_context *ctx, int ref) {
+void dukext_unref(duk_context *ctx, int ref) {
 
   if (!ref)
     return;
