@@ -5,6 +5,7 @@
 #include <csystem/path.h>
 #include <dukext/dukext.h>
 #include <dukext/utils.h>
+#include "console.h"
 
 dukext_t *dukext_create_default() {
   dukext_config_t cfg;
@@ -36,6 +37,7 @@ dukext_t *dukext_create(dukext_config_t config) {
   duk_stash_set_ptr(vm->ctx, "dukext_vm", vm);
 
   dukextp_init_commonjs(vm);
+  duk_console_init(vm->ctx, DUK_CONSOLE_PROXY_WRAPPER);
 
   return vm;
 }

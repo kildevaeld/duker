@@ -1,8 +1,6 @@
 const out = require('./other2');
-
-
-//const out = require('./build/example/libplugin.dylib');
-
+const out2 = require('./build/example/plugin');
+console.log(out(), out2);
 /*const EventEmitter = require('events').EventEmitter;
 
 console.log(out)
