@@ -130,7 +130,7 @@ duk_ret_t dukext_eval_path(duker_t *ctx, const char *path, duker_err_t **err) {
 duk_ret_t dukext_eval_script(duker_t *ctx, const char *path, const char *script,
                              duker_err_t **err) {
 
-  duk_eval_string(ctx->ctx, script);
+  duk_push_string(ctx, script);
   duk_ret_t ret = duk_module_node_peval_main(ctx->ctx, path);
   if (ret == DUK_EXEC_ERROR && err) {
     if (duk_get_prop_string(ctx->ctx, -1, "stack")) {

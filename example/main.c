@@ -1,39 +1,35 @@
-#include <duker/duker.h>
+#include <dukext/dukext.h>
 //#include <duker/pool.h>
-#include <duker/uv/uv-module.h>
+//#include <duker/uv/uv-module.h>
 #include <stdio.h>
 
 // Run a single file, one time
 static int run_single(const char *path) {
 
-  duker_t *d;
-  if (!(d = dukext_create(NULL))) {
+  dukext_t *d;
+  if (!(d = dukext_create_default())) {
     printf("could not init duk\n");
     return 1;
   };
 
-  uv_loop_t *loop = uv_default_loop();
-
-  dukext_register_module_uv(d, loop);
-  dukext_add_default_modules(d);
-
-  duker_err_t *err = NULL;
+  dukext_err_t *err = NULL;
   duk_ret_t ret = dukext_eval_path(d, path, &err);
 
-  uv_run(loop, UV_RUN_DEFAULT);
+  // uv_run(loop, UV_RUN_DEFAULT);
 
   if (ret != DUK_EXEC_SUCCESS) {
     printf("error %s\n", err->message);
-    dukext_free_err(err);
+    dukext_err_free(err);
   }
-  dukext_free(d);
+
+  dukext_destroy(d);
 
   return ret;
 }
 
 /*
-static duker_t *create_ctx() {
-  duker_t *ctx = dukext_create(NULL);
+static dukext_t *create_ctx() {
+  dukext_t *ctx = dukext_create(NULL);
   dukext_register_module_uv(ctx, uv_loop_new());
   return ctx;
 }

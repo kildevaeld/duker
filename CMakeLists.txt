@@ -23,6 +23,7 @@ find_package(zlib)
 include_directories(vendor/c-thread-pool)
 
 add_subdirectory(src)
+add_subdirectory(src2)
 
 if (DUK_BUILD_UV)
 	find_package(libuv)

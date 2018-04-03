@@ -1,4 +1,7 @@
-const out = require('./build/example/libplugin.dylib');
+const out = require('./other2');
+
+
+//const out = require('./build/example/libplugin.dylib');
 
 /*const EventEmitter = require('events').EventEmitter;
 

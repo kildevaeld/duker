@@ -10,8 +10,6 @@ typedef enum dukext_module_type {
   DUKEXT_PATH_TYPE = 1 << 3
 } dukext_module_type;
 
-// enum module_type { FN_MODTYPE, STR_MODTYPE, LIB_MODTYPE };
-
 struct modules_bag_s {
   char *name;
   enum dukext_module_type type;
