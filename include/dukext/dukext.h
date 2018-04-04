@@ -17,6 +17,8 @@ typedef void (*dukext_console_logger)(duk_context *ctx,
 
 typedef bool (*dukext_module_resolver)(duk_context *ctx, const char *filename);
 
+typedef duk_ret_t (*dukext_module_initializer)(duk_context *ctx);
+
 typedef enum {
   DUKEXT_FN_TYPE = 1 << 0,
   DUKEXT_STR_TYPE = 1 << 1,

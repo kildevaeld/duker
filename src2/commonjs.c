@@ -117,8 +117,11 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
   ret = duk_safe_call(ctx, duk__load_module, vm, 0, 1);
 
   if (ret != DUK_EXEC_SUCCESS) {
+    duk__del_cached_module(ctx, id);
     duk_throw(ctx);
   }
+
+  // dukext_dump_context_stdout(ctx);
 
   /* fall through */
 
@@ -354,6 +357,47 @@ static bool is_dynamic_lib(const char *filename) {
   return strcmp(filename + iexts, LIBRARY_EXT) == 0;
 }
 
+static duk_ret_t push_lib(duk_context *ctx, void *handle, const char *file,
+                          bool *ok) {
+
+  int i, xi;
+  int bret = cs_path_base(file, &i);
+  int eret = cs_path_ext(file + i, &xi);
+
+  if (strncmp(file + i, "lib", 3) == 0) {
+    bret -= 3;
+    i += 3;
+  }
+
+  int name_ln = bret - eret + 8;
+  char name[name_ln + 1];
+  strcpy(name, "dukopen_");
+  strncpy(name + 8, file + i, xi);
+  name[name_ln] = '\0';
+
+  dlerror();
+  dukext_module_initializer module_init =
+      (dukext_module_initializer)dlsym(handle, name);
+  const char *dlsym_error = dlerror();
+  if (dlsym_error) {
+    dlclose(handle);
+    return duk_type_error(ctx, "cannot load module '%s'@%s: %s", file, name,
+                          dlsym_error);
+  }
+  if (ok)
+    *ok = true;
+  duk_push_c_function(ctx, module_init, 0);
+  duk_ret_t ret = duk_pcall(ctx, 0);
+  if (ret != DUK_EXEC_SUCCESS)
+    duk_throw(ctx);
+
+  if (!duk_is_object_coercible(ctx, -1)) {
+    duk_type_error(ctx, "invalid return type from %s@%s", file, name);
+  }
+
+  return 1;
+}
+
 static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
   // dukext_dump_context_stdout(ctx);
 
@@ -374,14 +418,21 @@ static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
     if (is_dynamic_lib(file)) {
       void *handle = dlopen(file, RTLD_LAZY);
       if (!handle)
-        return 0;
-      // goto fail;
-      /*bool ok;
-      if (push_lib(ctx, handle, filename, &ok) && ok) {
-        add_module_lib(vm, filename, handle);
-      }
+        duk_type_error(ctx, "could not load native");
 
-      return 1;*/
+      // goto fail;
+      bool ok;
+      if (push_lib(ctx, handle, file, &ok) && ok) {
+        // add_module_lib(vm, filename, handle);
+        duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
+
+        while (duk_next(ctx, -1 /*enum_idx*/, 1 /*get_value*/)) {
+          duk_put_prop_string(ctx, eidx, duk_get_string(ctx, -2));
+          duk_pop(ctx);
+        }
+
+        duk_pop_2(ctx);
+      }
 
     } else {
       int len;
@@ -403,7 +454,6 @@ static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
 
   duk_pop_2(ctx);
 
-  
   return 1;
 }
 
