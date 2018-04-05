@@ -89,10 +89,10 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
     duk_type_error(ctx, "invalid return type");
   }
 
-  duk_get_prop_string(ctx, -1, "files");
-  duk_get_prop_index(ctx, -1, 0);
+  duk_get_prop_string(ctx, -1, "id");
+  // duk_get_prop_index(ctx, -1, 0);
   id = duk_require_string(ctx, -1);
-  duk_pop_2(ctx);
+  duk_pop(ctx);
 
   if (duk__get_cached_module(ctx, id)) {
     goto have_module; /* use the cached module */
@@ -111,12 +111,6 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
   duk_idx_t module_idx = duk_normalize_index(ctx, -1);
   duk_idx_t info_idx = duk_normalize_index(ctx, -2);
 
-  /*duk_dup(ctx, -3);
-  (void)duk_get_prop_string(ctx, module_idx, "exports");
-  duk_dup(ctx, module_idx);*/
-  // ret = duk_pcall(ctx, 3);
-
-  // ret = duk_safe_call(ctx, duk__load_module, vm, 0, 1);
   duk_get_prop_string(ctx, info_idx, "resolver");
   duk_get_prop_string(ctx, -1, "load");
 
@@ -255,33 +249,6 @@ static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata) {
 
   return 1;
 }
-/*
-static bool file_exists(char *buffer, size_t len, const char *ext) {
-  size_t elen = strlen(ext);
-  strcpy(buffer + len, ext);
-  buffer[len + elen] = '\0';
-  if (!cs_file_exists(buffer)) {
-    char buf[len + elen + 4 + 1];
-
-    int bidx, didx;
-
-    int blen = cs_path_base(buffer, &bidx);
-    if (blen == 0) {
-      return false;
-    }
-
-    didx = cs_path_dir(buffer);
-    memcpy(buf, buffer, didx);
-    memcpy(buf + didx, "/lib", 4);
-    memcpy(buf + didx + 4, buffer + bidx, blen);
-    buf[len + elen + 3] = '\0';
-    if (!cs_file_exists(buf)) {
-      return false;
-    }
-    strcpy(buffer, buf);
-  }
-  return true;
-}*/
 
 static duk_ret_t match_reg(duk_context *ctx) {
   const char *re = duk_require_string(ctx, 0);
@@ -409,168 +376,7 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
   duk_pop_n(ctx, 3);
 
   return 1;
-  // File
-  /*if (strncmp(module_id, "/", 1) == 0 || strncmp(module_id, "./", 2) == 0 ||
-      strncmp(module_id, "../", 3) == 0) {
-
-    char *full_file = module_id;
-    bool c = false;
-    if (!cs_path_is_abs(module_id)) {
-      if (strlen(parent_id) == 0) {
-        parent_id = duk_get_main(ctx);
-      }
-
-      int dl = cs_path_dir(parent_id);
-      char parent_path[dl + 1];
-      strncpy(parent_path, parent_id, dl);
-      parent_path[dl] = '\0';
-
-      full_file = cs_path_join(NULL, parent_path, module_id, NULL);
-      c = true;
-    }
-
-    int ext_idx = -1;
-    int len = cs_path_ext(full_file, &ext_idx);
-
-    duk_get_prop_string(ctx, ext_idx, "files");
-    int al = 0;
-    if (len == 0) {
-      len = strlen(full_file);
-      char buf[len + 15];
-      strcpy(buf, full_file);
-      if (file_exists(buf, len, LIBRARY_EXT)) {
-        duk_push_string(ctx, buf);
-        duk_put_prop_index(ctx, -2, al++);
-        strcpy(buf, full_file);
-      }
-      if (file_exists(buf, len, ".js")) {
-        duk_push_string(ctx, buf);
-        duk_put_prop_index(ctx, -2, al++);
-      }
-
-    } else if (cs_file_exists(full_file)) {
-      duk_push_string(ctx, full_file);
-      duk_put_prop_index(ctx, -2, al++);
-    }
-    duk_pop(ctx);
-
-    if (al == 0) {
-      duk_push_undefined(ctx);
-    }
-
-    if (c)
-      free(full_file);
-  }
-
-  return 1;*/
 }
-/*
-static bool is_dynamic_lib(const char *filename) {
-  int iexts;
-  cs_path_ext(filename, &iexts);
-  return strcmp(filename + iexts, LIBRARY_EXT) == 0;
-}
-
-static duk_ret_t push_lib(duk_context *ctx, void *handle, const char *file,
-                          bool *ok) {
-
-  int i, xi;
-  int bret = cs_path_base(file, &i);
-  int eret = cs_path_ext(file + i, &xi);
-
-  if (strncmp(file + i, "lib", 3) == 0) {
-    bret -= 3;
-    i += 3;
-  }
-
-  int name_ln = bret - eret + 8;
-  char name[name_ln + 1];
-  strcpy(name, "dukopen_");
-  strncpy(name + 8, file + i, xi);
-  name[name_ln] = '\0';
-
-  dlerror();
-  dukext_module_initializer module_init =
-      (dukext_module_initializer)dlsym(handle, name);
-  const char *dlsym_error = dlerror();
-  if (dlsym_error) {
-    dlclose(handle);
-    return duk_type_error(ctx, "cannot load module '%s'@%s: %s", file, name,
-                          dlsym_error);
-  }
-  if (ok)
-    *ok = true;
-  duk_push_c_function(ctx, module_init, 0);
-  duk_ret_t ret = duk_pcall(ctx, 0);
-  if (ret != DUK_EXEC_SUCCESS)
-    duk_throw(ctx);
-
-  if (!duk_is_object_coercible(ctx, -1)) {
-    duk_type_error(ctx, "invalid return type from %s@%s", file, name);
-  }
-
-  return 1;
-}
-
-static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
-  // dukext_dump_context_stdout(ctx);
-
-  duk_idx_t didx = duk_normalize_index(ctx, -2);
-  duk_idx_t midx = duk_normalize_index(ctx, -1);
-
-  duk_get_prop_string(ctx, midx, "exports");
-  duk_idx_t eidx = duk_normalize_index(ctx, -1);
-
-  duk_get_prop_string(ctx, didx, "files");
-
-  duk_size_t alen = duk_get_length(ctx, -1);
-
-  for (int i = 0; i < alen; i++) {
-    duk_get_prop_index(ctx, -1, i);
-    char *file = duk_require_string(ctx, -1);
-    // duk_pop(ctx);
-    if (is_dynamic_lib(file)) {
-      void *handle = dlopen(file, RTLD_LAZY);
-      if (!handle)
-        duk_type_error(ctx, "could not load native");
-
-      // goto fail;
-      bool ok;
-      if (push_lib(ctx, handle, file, &ok) && ok) {
-        // add_module_lib(vm, filename, handle);
-        duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
-
-        while (duk_next(ctx, -1 , 1 )) {
-          duk_put_prop_string(ctx, eidx, duk_get_string(ctx, -2));
-          duk_pop(ctx);
-        }
-
-        duk_pop_2(ctx);
-      }
-
-    } else {
-      int len;
-      char *buffer = cs_read_file(file, NULL, 0, &len);
-      if (len == 0)
-        duk_type_error(ctx, "could not read %s", file);
-
-      duk_dup(ctx, midx);
-      duk_push_lstring(ctx, buffer, len);
-
-      duk_ret_t ret = duk_safe_call(ctx, duk__eval_module_source, udata, 2, 1);
-      if (ret != DUK_EXEC_SUCCESS)
-        duk_throw(ctx);
-      duk_pop(ctx);
-    }
-
-    duk_pop(ctx);
-  }
-
-  duk_pop_2(ctx);
-
-  return 1;
-}
-*/
 
 void dukextp_init_commonjs(dukext_t *vm) {
   duk_context *ctx = vm->ctx;

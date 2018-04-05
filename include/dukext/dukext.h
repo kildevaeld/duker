@@ -19,12 +19,14 @@ typedef bool (*dukext_module_resolver)(duk_context *ctx, const char *filename);
 
 typedef duk_ret_t (*dukext_module_initializer)(duk_context *ctx);
 
-typedef enum {
+/*typedef enum {
   DUKEXT_FN_TYPE = 1 << 0,
   DUKEXT_STR_TYPE = 1 << 1,
   DUKEXT_LIB_TYPE = 1 << 2,
   DUKEXT_PATH_TYPE = 1 << 3
-} dukext_module_type;
+} dukext_module_type;*/
+
+typedef enum { DUKEXT_FILE_TYPE = 1 << 0 } dukext_module_type;
 
 typedef struct {
   char *message;

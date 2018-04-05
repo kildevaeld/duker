@@ -4,7 +4,10 @@
 //#include <duker/uv/uv-module.h>
 #include <stdio.h>
 
-static duk_ret_t mod(duk_context *ctx) { return 0; }
+static duk_ret_t mod(duk_context *ctx) {
+  duk_push_string(ctx, "builtint");
+  return 1;
+}
 
 // Run a single file, one time
 static int run_single(const char *path) {

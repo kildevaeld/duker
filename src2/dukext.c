@@ -79,8 +79,11 @@ dukext_t *dukext_create(dukext_config_t config) {
   dukextp_init_commonjs(vm);
   duk_console_init(vm->ctx, DUK_CONSOLE_PROXY_WRAPPER);
 
-  dukext_set_module_resolver(vm, "file", cjs_resolve_file, cjs_load_file);
   dukext_set_module_resolver(vm, "module", cjs_resolve_module, cjs_load_module);
+
+  if (config.module_types & DUKEXT_FILE_TYPE) {
+    dukext_set_module_resolver(vm, "file", cjs_resolve_file, cjs_load_file);
+  }
 
   return vm;
 }
@@ -100,8 +103,8 @@ void dukext_destroy(dukext_t *vm) {
 void dukext_config_init(dukext_config_t *cfg) {
   cfg->logger = NULL;
   cfg->max_heap = 0;
-  cfg->module_types =
-      DUKEXT_FN_TYPE | DUKEXT_PATH_TYPE | DUKEXT_LIB_TYPE | DUKEXT_STR_TYPE;
+  cfg->module_types = DUKEXT_FILE_TYPE;
+  // DUKEXT_FN_TYPE | DUKEXT_PATH_TYPE | DUKEXT_LIB_TYPE | DUKEXT_STR_TYPE;
   cfg->resolver = NULL;
 }
 
