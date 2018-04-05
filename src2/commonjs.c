@@ -255,7 +255,7 @@ static duk_int_t duk__eval_module_source(duk_context *ctx, void *udata) {
 
   return 1;
 }
-
+/*
 static bool file_exists(char *buffer, size_t len, const char *ext) {
   size_t elen = strlen(ext);
   strcpy(buffer + len, ext);
@@ -281,7 +281,7 @@ static bool file_exists(char *buffer, size_t len, const char *ext) {
     strcpy(buffer, buf);
   }
   return true;
-}
+}*/
 
 static duk_ret_t match_reg(duk_context *ctx) {
   const char *re = duk_require_string(ctx, 0);
@@ -410,7 +410,7 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
 
   return 1;
   // File
-  if (strncmp(module_id, "/", 1) == 0 || strncmp(module_id, "./", 2) == 0 ||
+  /*if (strncmp(module_id, "/", 1) == 0 || strncmp(module_id, "./", 2) == 0 ||
       strncmp(module_id, "../", 3) == 0) {
 
     char *full_file = module_id;
@@ -451,10 +451,7 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
     } else if (cs_file_exists(full_file)) {
       duk_push_string(ctx, full_file);
       duk_put_prop_index(ctx, -2, al++);
-    } /*else {
-      duk_push_undefined(ctx);
-    }*/
-
+    }
     duk_pop(ctx);
 
     if (al == 0) {
@@ -465,9 +462,9 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
       free(full_file);
   }
 
-  return 1;
+  return 1;*/
 }
-
+/*
 static bool is_dynamic_lib(const char *filename) {
   int iexts;
   cs_path_ext(filename, &iexts);
@@ -543,7 +540,7 @@ static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
         // add_module_lib(vm, filename, handle);
         duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
 
-        while (duk_next(ctx, -1 /*enum_idx*/, 1 /*get_value*/)) {
+        while (duk_next(ctx, -1 , 1 )) {
           duk_put_prop_string(ctx, eidx, duk_get_string(ctx, -2));
           duk_pop(ctx);
         }
@@ -573,6 +570,7 @@ static duk_ret_t duk__load_module(duk_context *ctx, void *udata) {
 
   return 1;
 }
+*/
 
 void dukextp_init_commonjs(dukext_t *vm) {
   duk_context *ctx = vm->ctx;
