@@ -1,19 +1,23 @@
 #include <dukext/dukext.h>
+#include <dukext/module.h>
 //#include <duker/pool.h>
 //#include <duker/uv/uv-module.h>
 #include <stdio.h>
 
+static duk_ret_t mod(duk_context *ctx) { return 0; }
+
 // Run a single file, one time
 static int run_single(const char *path) {
 
-  dukext_t *d;
-  if (!(d = dukext_create_default())) {
+  dukext_t *vm;
+  if (!(vm = dukext_create_default())) {
     printf("could not init duk\n");
     return 1;
   };
 
+  dukext_module_set(vm, "test", mod);
   dukext_err_t *err = NULL;
-  duk_ret_t ret = dukext_eval_path(d, path, &err);
+  duk_ret_t ret = dukext_eval_path(vm, path, &err);
 
   // uv_run(loop, UV_RUN_DEFAULT);
 
@@ -22,7 +26,9 @@ static int run_single(const char *path) {
     dukext_err_free(err);
   }
 
-  dukext_destroy(d);
+  // sleep(100);
+
+  dukext_destroy(vm);
 
   return ret;
 }

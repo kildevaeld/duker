@@ -3,6 +3,7 @@
 #include <csystem/file.h>
 #include <csystem/path.h>
 #include <dlfcn.h>
+#include <dukext/module.h>
 #include <dukext/utils.h>
 
 #ifdef CS_PLATFORM_DARWIN
@@ -275,6 +276,35 @@ static bool file_exists(char *buffer, size_t len, const char *ext) {
   return true;
 }
 
+static duk_ret_t match_reg(duk_context *ctx) {
+  const char *re = duk_require_string(ctx, 0);
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "constants");
+  if (!duk_get_prop_string(ctx, -1, re)) {
+    duk_type_error(ctx, "regex '%s' does not exists", re);
+  }
+
+  duk_push_string(ctx, "match");
+  duk_dup(ctx, -2);
+  duk_call_prop(ctx, 1, 1);
+  return 1;
+}
+
+static bool require_type_check(duk_context *ctx, const char *type) {
+  duk_push_c_lightfunc(ctx, match_reg, 2, 2, 0);
+  duk_push_string(ctx, type);
+  duk_dup(ctx, -3);
+
+  duk_ret_t ret = duk_pcall(ctx, 2);
+  if (ret != DUK_EXEC_SUCCESS) {
+    return false;
+  }
+  bool is = !duk_is_null(ctx, -1);
+
+  duk_pop(ctx);
+  return is;
+}
+
 static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
 
   // stack [... id require parent_id]
@@ -284,6 +314,12 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
   const char *module_id = duk_require_string(ctx, -3);
   const char *parent_id = duk_require_string(ctx, -1);
 
+  bool builtin = false;
+
+  if (dukext_module_has(vm, module_id)) {
+    builtin = true;
+  }
+
   duk_idx_t obj_idx = duk_push_object(ctx);
   duk_push_array(ctx);
   duk_put_prop_string(ctx, obj_idx, "files");
@@ -292,6 +328,80 @@ static duk_ret_t duk__resolve_module(duk_context *ctx, void *udata) {
   duk_dup(ctx, -2);
   duk_put_prop_string(ctx, obj_idx, "parent");
 
+  duk_dup(ctx, -4);
+
+  if (require_type_check(ctx, "protocol")) {
+    printf("is protocol");
+  } else if (require_type_check(ctx, "file")) {
+
+    if (!cs_path_is_abs(module_id)) {
+      if (strlen(parent_id) == 0) {
+        parent_id = duk_get_main(ctx);
+      }
+
+      int dl = cs_path_dir(parent_id);
+      char parent_path[dl + 1];
+      strncpy(parent_path, parent_id, dl);
+      parent_path[dl] = '\0';
+
+      char *full_file = cs_path_join(NULL, parent_path, module_id, NULL);
+
+      if (!full_file) {
+        duk_type_error(ctx, "error");
+      }
+
+      duk_push_string(ctx, "file://");
+      duk_push_string(ctx, full_file);
+      free(full_file);
+      duk_concat(ctx, 2);
+      duk_put_prop_string(ctx, obj_idx, "id");
+    }
+  } else {
+    duk_push_string(ctx, "module://");
+    duk_dup(ctx, -2);
+    duk_concat(ctx, 2);
+    duk_put_prop_string(ctx, obj_idx, "id");
+  }
+
+  duk_pop(ctx);
+
+  duk_push_c_lightfunc(ctx, match_reg, 2, 2, 0);
+  duk_push_string(ctx, "protocol");
+  duk_get_prop_string(ctx, obj_idx, "id");
+  duk_ret_t ret = duk_pcall(ctx, 2);
+  if (ret != DUK_EXEC_SUCCESS) {
+    duk_throw(ctx);
+  }
+  duk_put_prop_string(ctx, obj_idx, "protocol");
+
+  duk_get_prop_string(ctx, obj_idx, "protocol");
+  duk_get_prop_index(ctx, -1, 1);
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "find_resolver");
+
+  duk_dup(ctx, -3);
+  ret = duk_pcall(ctx, 1);
+  if (ret != DUK_EXEC_SUCCESS) {
+    duk_throw(ctx);
+  }
+
+  if (duk_is_null_or_undefined(ctx, -1)) {
+    duk_type_error(ctx, "could not find resolver for protocol: '%s'",
+                   duk_require_string(ctx, -3));
+  }
+
+  duk_get_prop_string(ctx, -1, "resolve");
+  duk_dup(ctx, obj_idx);
+  ret = duk_pcall(ctx, 1);
+  if (ret != DUK_EXEC_SUCCESS) {
+    duk_throw(ctx);
+  }
+  duk_pop(ctx);
+  duk_put_prop_string(ctx, obj_idx, "resolver");
+
+  duk_pop_n(ctx, 3);
+
+  return 1;
   // File
   if (strncmp(module_id, "/", 1) == 0 || strncmp(module_id, "./", 2) == 0 ||
       strncmp(module_id, "../", 3) == 0) {

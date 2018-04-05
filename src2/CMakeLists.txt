@@ -7,6 +7,7 @@ set(SOURCES
     sandbox.c
     utils.c
     commonjs.c
+    commonjs_file.c
     console.c
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 )

@@ -1,16 +1,54 @@
 #include "commonjs.h"
+#include "commonjs_file.h"
+#include "console.h"
 #include "definitions.h"
 #include "sandbox.h"
 #include <csystem/file.h>
 #include <csystem/path.h>
 #include <dukext/dukext.h>
+#include <dukext/module.h>
 #include <dukext/utils.h>
-#include "console.h"
 
 dukext_t *dukext_create_default() {
   dukext_config_t cfg;
   dukext_config_init(&cfg);
   return dukext_create(cfg);
+}
+
+// ([a-zA-Z]+)(?:\:\/\/)(\/?[a-zA-Z\.\-]+(?:\/[a-zA-Z\.\-]+)*)
+// ^(?:\/|\.\.?\/)(?:[^\/\0]+(?:\/)?)+$
+
+static duk_ret_t get_module_resolver(duk_context *ctx) {
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "resolvers");
+  duk_get_prop_string(ctx, -1, duk_require_string(ctx, 0));
+
+  return 1;
+}
+
+static void init_stash(duk_context *ctx) {
+  duk_push_global_stash(ctx);
+  duk_eval_string(ctx,
+                  "({"
+                  "protocol: "
+                  "/^([a-zA-Z0-9]+)(?:\\:\\/\\/)(\\/?[a-zA-Z0-9\\.\\-]+(?:\\/"
+                  "[a-zA-Z0-9\\.\\-]+)*)$/,"
+                  "file: /^(?:\\/|\\.\\.?\\/)(?:[^\\/\\0]+(?:\\/)?)+$/"
+                  "})");
+  duk_put_prop_string(ctx, -2, "constants");
+
+  duk_push_object(ctx);
+  duk_put_prop_string(ctx, -2, "modules");
+
+  duk_push_object(ctx);
+  duk_put_prop_string(ctx, -2, "resolvers");
+  duk_push_c_lightfunc(ctx, get_module_resolver, 1, 1, 0);
+  duk_put_prop_string(ctx, -2, "find_resolver");
+
+  duk_push_c_lightfunc(ctx, dukextp_module_push, 1, 1, 0);
+  duk_put_prop_string(ctx, -2, "find_module");
+
+  duk_pop(ctx);
 }
 
 dukext_t *dukext_create(dukext_config_t config) {
@@ -35,9 +73,13 @@ dukext_t *dukext_create(dukext_config_t config) {
   }
 
   duk_stash_set_ptr(vm->ctx, "dukext_vm", vm);
+  init_stash(vm->ctx);
 
   dukextp_init_commonjs(vm);
   duk_console_init(vm->ctx, DUK_CONSOLE_PROXY_WRAPPER);
+
+  dukext_set_module_resolver(vm, "file", cjs_resolve_file, cjs_load_file);
+  dukext_set_module_resolver(vm, "module", cjs_resolve_module, cjs_load_module);
 
   return vm;
 }
