@@ -2,7 +2,7 @@ const out = require('./other2');
 const out2 = require('./build/example/plugin');
 const test = require('test');
 console.log(out());
-console.log(out2, test);
+console.log(out2, test, require('./test-data.json'));
 /*const EventEmitter = require('events').EventEmitter;
 
 console.log(out)

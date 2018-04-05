@@ -135,6 +135,25 @@ static duk_ret_t load_javascript(duk_context *ctx, void *udata) {
 static duk_ret_t load_json(duk_context *ctx, void *udata) {
   duk_idx_t midx = duk_normalize_index(ctx, -3);
   duk_idx_t iidx = duk_normalize_index(ctx, -4);
+
+  const char *file = duk_require_string(ctx, -1);
+
+  int size = cs_file_size(file);
+
+  if (size == 0) {
+    return 0;
+  }
+
+  char *buffer = duk_push_fixed_buffer(ctx, size);
+  if (!cs_read_file(file, buffer, size, &size)) {
+    duk_type_error(ctx, "could not read %s", file);
+  }
+
+  duk_buffer_to_string(ctx, -1);
+  duk_json_decode(ctx, -1);
+
+  duk_put_prop_string(ctx, midx, "exports");
+
   return 0;
 }
 
@@ -222,8 +241,8 @@ duk_ret_t cjs_load_file(duk_context *ctx) {
       // JS
     } else if (strcmp(n + iexts, ".js") == 0) {
       ret = duk_safe_call(ctx, load_javascript, NULL, 0, 0);
-      // JSON
-    } else if (strcmp(n + iexts, ".json") == 0) {
+      // JSON (only if only)
+    } else if (strcmp(n + iexts, ".json") == 0 && len == 1) {
       ret = duk_safe_call(ctx, load_json, NULL, 0, 0);
     } else {
       duk_type_error(ctx, "could not load %s\n", n);
