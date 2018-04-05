@@ -109,20 +109,27 @@ static duk_ret_t duk__handle_require(duk_context *ctx) {
    */
 
   duk_idx_t module_idx = duk_normalize_index(ctx, -1);
+  duk_idx_t info_idx = duk_normalize_index(ctx, -2);
 
   /*duk_dup(ctx, -3);
   (void)duk_get_prop_string(ctx, module_idx, "exports");
   duk_dup(ctx, module_idx);*/
   // ret = duk_pcall(ctx, 3);
 
-  ret = duk_safe_call(ctx, duk__load_module, vm, 0, 1);
+  // ret = duk_safe_call(ctx, duk__load_module, vm, 0, 1);
+  duk_get_prop_string(ctx, info_idx, "resolver");
+  duk_get_prop_string(ctx, -1, "load");
+
+  duk_dup(ctx, info_idx);
+  duk_dup(ctx, module_idx);
+
+  ret = duk_pcall(ctx, 2);
 
   if (ret != DUK_EXEC_SUCCESS) {
     duk__del_cached_module(ctx, id);
     duk_throw(ctx);
   }
-
-  // dukext_dump_context_stdout(ctx);
+  duk_pop_2(ctx);
 
   /* fall through */
 

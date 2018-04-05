@@ -8,6 +8,7 @@ set(SOURCES
     utils.c
     commonjs.c
     commonjs_file.c
+    commonjs_module.c
     console.c
     ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
 )

@@ -19,7 +19,7 @@ bool dukext_set_module_resolver(dukext_t *vm, const char *protocol,
   duk_push_object(ctx);
   duk_push_c_lightfunc(ctx, resolve, 1, 1, 0);
   duk_put_prop_string(ctx, -2, "resolve");
-  duk_push_c_lightfunc(ctx, resolve, 1, 1, 0);
+  duk_push_c_lightfunc(ctx, load, 2, 2, 0);
   duk_put_prop_string(ctx, -2, "load");
   duk_push_string(ctx, protocol);
   duk_put_prop_string(ctx, -2, "protocol");

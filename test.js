@@ -1,7 +1,8 @@
 const out = require('./other2');
 const out2 = require('./build/example/plugin');
 //const test = require('test');
-console.log(out(), out2);
+console.log(out());
+console.log(out2);
 /*const EventEmitter = require('events').EventEmitter;
 
 console.log(out)

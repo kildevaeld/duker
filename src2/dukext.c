@@ -1,5 +1,6 @@
 #include "commonjs.h"
 #include "commonjs_file.h"
+#include "commonjs_module.h"
 #include "console.h"
 #include "definitions.h"
 #include "sandbox.h"
