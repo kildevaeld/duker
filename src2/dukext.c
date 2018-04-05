@@ -129,7 +129,11 @@ duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err) {
     c = 1;
   }
 
-  if (!(buffer = cs_read_file(path, NULL, 0, &len))) {
+  duk_context *ctx = vm->ctx;
+
+  int size = cs_file_size(path);
+  buffer = duk_push_fixed_buffer(ctx, size);
+  if (!(buffer = cs_read_file(path, buffer, size, &len))) {
 
     if (c)
       free((char *)path);
@@ -141,12 +145,10 @@ duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err) {
     return DUK_EXEC_ERROR;
   }
 
-  duk_context *ctx = vm->ctx;
+  duk_buffer_to_string(ctx, -1);
 
-  duk_push_lstring(ctx, buffer, len);
   duk_ret_t ret = dukextp_commonjs_eval_main(ctx, path);
 
-  free(buffer);
   if (c)
     free((char *)path);
 

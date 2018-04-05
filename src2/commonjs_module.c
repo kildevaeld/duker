@@ -27,7 +27,6 @@ duk_ret_t cjs_resolve_module(duk_context *ctx) {
 }
 
 duk_ret_t cjs_load_module(duk_context *ctx) {
-  dukext_dump_context_stdout(ctx);
 
   duk_get_prop_string(ctx, 0, "module");
   duk_require_function(ctx, -1);
