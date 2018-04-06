@@ -18,16 +18,16 @@ include_directories(
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 find_package(csystem)
-find_package(zlib)
+#find_package(zlib)
 
-include_directories(vendor/c-thread-pool)
+#include_directories(vendor/c-thread-pool)
 
-add_subdirectory(src)
+#add_subdirectory(src)
 add_subdirectory(src2)
 
 if (DUK_BUILD_UV)
 	find_package(libuv)
-	add_subdirectory(src/uv)
+	add_subdirectory(src2/uv)
 endif(DUK_BUILD_UV)
 
 add_subdirectory(example)

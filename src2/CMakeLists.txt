@@ -17,8 +17,8 @@ add_library(dukext SHARED ${SOURCES})
 target_link_libraries(dukext
     csystem 
     #${LIBMBEDTLS_LIBRARIES}
-    pthread
-    ${LIBZLIB_LIBRARIES}
+    #pthread
+    #${LIBZLIB_LIBRARIES}
 )
 
 

@@ -1,7 +1,7 @@
 #include <dukext/dukext.h>
 #include <dukext/module.h>
 //#include <duker/pool.h>
-//#include <duker/uv/uv-module.h>
+#include <dukext/uv/uv.h>
 #include <stdio.h>
 
 static duk_ret_t mod(duk_context *ctx) {
@@ -12,25 +12,37 @@ static duk_ret_t mod(duk_context *ctx) {
 // Run a single file, one time
 static int run_single(const char *path) {
 
+  dukext_config_t config;
+  dukext_config_init(&config);
+  config.max_heap = 1024 << 16;
+  config.module_types = DUKEXT_FILE_TYPE;
   dukext_t *vm;
-  if (!(vm = dukext_create_default())) {
+  if (!(vm = dukext_create(config))) {
     printf("could not init duk\n");
     return 1;
   };
+  dukext_dump_stats(vm);
+  dukext_uv_init(vm, uv_default_loop());
 
   dukext_module_set(vm, "test", mod);
   dukext_err_t *err = NULL;
   duk_ret_t ret = dukext_eval_path(vm, path, &err);
+
+  dukext_dump_stats(vm);
 
   // uv_run(loop, UV_RUN_DEFAULT);
 
   if (ret != DUK_EXEC_SUCCESS) {
     printf("error %s\n", err->message);
     dukext_err_free(err);
+    goto end;
   }
 
   // sleep(100);
 
+  uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+  dukext_dump_stats(vm);
+end:
   dukext_destroy(vm);
 
   return ret;

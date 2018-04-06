@@ -13,6 +13,7 @@
 dukext_t *dukext_create_default() {
   dukext_config_t cfg;
   dukext_config_init(&cfg);
+  cfg.module_types = DUKEXT_FILE_TYPE;
   return dukext_create(cfg);
 }
 
@@ -60,6 +61,8 @@ dukext_t *dukext_create(dukext_config_t config) {
 
   vm->config = config;
   vm->modules = NULL;
+  vm->stats.count = 0;
+  vm->stats.heap = 0;
 
   if (vm->config.max_heap >= DUKEXT_SANDBOX_MIN) {
     vm->ctx = duk_create_heap(sandbox_alloc, sandbox_realloc, sandbox_free, vm,
@@ -75,6 +78,7 @@ dukext_t *dukext_create(dukext_config_t config) {
 
   duk_stash_set_ptr(vm->ctx, "dukext_vm", vm);
   init_stash(vm->ctx);
+  duk_ref_setup(vm->ctx);
 
   dukextp_init_commonjs(vm);
   duk_console_init(vm->ctx, DUK_CONSOLE_PROXY_WRAPPER);
@@ -86,6 +90,10 @@ dukext_t *dukext_create(dukext_config_t config) {
   }
 
   return vm;
+}
+
+void dukext_dump_stats(dukext_t *vm) {
+  printf("heap %i, count %i\n", vm->stats.heap, vm->stats.count);
 }
 
 void dukext_destroy(dukext_t *vm) {
@@ -103,9 +111,8 @@ void dukext_destroy(dukext_t *vm) {
 void dukext_config_init(dukext_config_t *cfg) {
   cfg->logger = NULL;
   cfg->max_heap = 0;
-  cfg->module_types = DUKEXT_FILE_TYPE;
-  // DUKEXT_FN_TYPE | DUKEXT_PATH_TYPE | DUKEXT_LIB_TYPE | DUKEXT_STR_TYPE;
-  cfg->resolver = NULL;
+  cfg->module_types = 0;
+  // cfg->resolver = NULL;
 }
 
 void dukext_err_free(dukext_err_t *err) {

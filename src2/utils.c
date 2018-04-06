@@ -23,6 +23,7 @@ void *duk_stash_get_ptr(duk_context *ctx, const char *name) {
 
   duk_get_prop_string(ctx, -1, name);
   if (duk_is_null_or_undefined(ctx, -1)) {
+    duk_pop_3(ctx);
     return NULL;
   }
   void *c = duk_to_pointer(ctx, -1);

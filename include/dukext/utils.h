@@ -1,4 +1,9 @@
 #pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <dukext/dukext.h>
 #include <duktape.h>
 
@@ -18,3 +23,7 @@ const char *duk_get_main(duk_context *ctx);
 dukext_t *duk_get_dukext(duk_context *ctx);
 
 void dukext_dump_context_stdout(duk_context *ctx);
+
+#ifdef __cplusplus
+}
+#endif

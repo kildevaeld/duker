@@ -215,7 +215,7 @@ static duk_ret_t load_dll(duk_context *ctx, void *udata) {
 }
 
 duk_ret_t cjs_load_file(duk_context *ctx) {
-  // dukext_dump_context_stdout(ctx);
+
   // [ info module ]
 
   duk_get_prop_string(ctx, 0, "files");
