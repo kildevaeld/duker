@@ -1,10 +1,30 @@
 #include "fs.h"
 #include "timers.h"
+#include <csystem/path.h>
 #include <dukext/module.h>
 #include <dukext/utils.h>
 #include <dukext/uv/uv.h>
 
-static duk_ret_t uv_fs_module(duk_context *ctx) {}
+static duk_ret_t duk_uv_cwd(duk_context *ctx) {
+  duk_size_t size = PATH_MAX;
+  char *buf = duk_push_dynamic_buffer(ctx, size);
+
+  uv_cwd(buf, &size);
+
+  duk_resize_buffer(ctx, -1, size);
+  duk_buffer_to_string(ctx, -1);
+
+  return 1;
+}
+
+static void dukext_uv_process_push(duk_context *ctx) {
+  duk_push_global_object(ctx);
+  duk_push_object(ctx);
+  duk_push_c_function(ctx, duk_uv_cwd, 0);
+  duk_put_prop_string(ctx, -2, "cwd");
+  duk_put_prop_string(ctx, -2, "process");
+  duk_pop(ctx);
+}
 
 void dukext_uv_init(dukext_t *vm, uv_loop_t *loop) {
 
@@ -17,6 +37,7 @@ void dukext_uv_init(dukext_t *vm, uv_loop_t *loop) {
   dukext_uv_loop_set(vm, loop);
 
   dukext_uv_timers_push(ctx);
+  dukext_uv_process_push(ctx);
 
   dukext_module_set(vm, "uv.fs", dukext_uv_fs);
 }

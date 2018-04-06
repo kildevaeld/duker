@@ -1,7 +1,7 @@
 const out = require('./other2');
 const out2 = require('./build/example/plugin');
 const test = require('test');
-console.log(out());
+console.log(out(), process.cwd());
 console.log(out2, test, require('./test-data.json'));
 
 var idx = setInterval(function () {
