@@ -10,15 +10,6 @@
 [submodule "vendor/miniz/miniz-src"]
 	path = vendor/miniz/miniz-src
 	url = git@github.com:richgel999/miniz.git
-[submodule "vendor/zlib"]
-	path = vendor/zlib
-	url = git@github.com:luvit/zlib.git
-[submodule "vendor/curl"]
-	path = vendor/curl
-	url = git@github.com:curl/curl.git
-[submodule "vendor/c-thread-pool"]
-	path = vendor/c-thread-pool
-	url = git@github.com:Pithikos/C-Thread-Pool.git
 [submodule "vendor/uvhttp"]
 	path = vendor/uvhttp
 	url = git@github.com:kildevaeld/uvhttp
