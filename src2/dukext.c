@@ -3,6 +3,7 @@
 #include "commonjs_module.h"
 #include "console.h"
 #include "definitions.h"
+#include "modules/modules.h"
 #include "sandbox.h"
 #include <csystem/file.h>
 #include <csystem/path.h>
@@ -82,6 +83,8 @@ dukext_t *dukext_create(dukext_config_t config) {
 
   dukextp_init_commonjs(vm);
   duk_console_init(vm->ctx, DUK_CONSOLE_PROXY_WRAPPER);
+
+  dukext_init_modules(vm);
 
   dukext_set_module_resolver(vm, "module", cjs_resolve_module, cjs_load_module);
 

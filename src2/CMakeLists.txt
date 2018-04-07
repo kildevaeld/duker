@@ -1,7 +1,12 @@
 
 
+file(GLOB MODULES
+    "modules/*.c"
+)
+
 
 set(SOURCES
+    ${MODULES}
     dukext.c
     module.c
     sandbox.c
