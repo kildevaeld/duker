@@ -175,5 +175,25 @@ duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err) {
 
   return ret;
 }
-duk_ret_t dukext_eval_script(dukext_t *vm, const char *script,
-                             const char *path) {}
+duk_ret_t dukext_eval_script(dukext_t *vm, const char *script, const char *path,
+                             dukext_err_t **err) {
+
+  duk_context *ctx = vm->ctx;
+
+  duk_push_string(ctx, script);
+
+  duk_ret_t ret = dukextp_commonjs_eval_main(ctx, path);
+
+  if (ret == DUK_EXEC_ERROR && err) {
+    if (duk_get_prop_string(ctx, -1, "stack")) {
+      duk_replace(ctx, -2);
+    } else {
+      duk_pop(ctx);
+    }
+    dukext_err_t *e = (dukext_err_t *)malloc(sizeof(dukext_err_t));
+    e->message = strdup(duk_require_string(ctx, -1));
+    *err = e;
+  }
+
+  return ret;
+}

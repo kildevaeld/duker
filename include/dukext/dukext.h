@@ -50,8 +50,8 @@ void dukext_dump_stats(dukext_t *vm);
 duk_context *dukext_get_ctx(dukext_t *);
 
 duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err);
-duk_ret_t dukext_eval_script(dukext_t *vm, const char *script,
-                             const char *path);
+duk_ret_t dukext_eval_script(dukext_t *vm, const char *script, const char *path,
+                             dukext_err_t **err);
 
 #ifdef __cplusplus
 }
