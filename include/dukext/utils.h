@@ -1,11 +1,10 @@
 #pragma once
+#include <dukext/dukext.h>
+#include <duktape.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <dukext/dukext.h>
-#include <duktape.h>
 
 // Global stash
 void duk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr);

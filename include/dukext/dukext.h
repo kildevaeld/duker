@@ -1,11 +1,10 @@
 #pragma once
+#include <duktape.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#include <duktape.h>
-#include <stdbool.h>
 
 #define DUKEXT_SANDBOX_MIN 256 * 1024
 

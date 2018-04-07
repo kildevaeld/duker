@@ -1,11 +1,12 @@
 #pragma once
+#include <dukext/dukext.h>
+#include <duktape.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <dukext/dukext.h>
-#include <duktape.h>
+
 
 typedef duk_ret_t (*dukext_module_resolve_cb)(duk_context *);
 typedef duk_ret_t (*dukext_module_load_cb)(duk_context *);

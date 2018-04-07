@@ -15,7 +15,7 @@ set(SOURCES
     commonjs_file.c
     commonjs_module.c
     console.c
-    ${PROJECT_ROOT}/vendor/duktape/src/duktape.c
+    ${PROJECT_SOURCE_DIR}/vendor/duktape/src/duktape.c
 )
 
 add_library(dukext SHARED ${SOURCES})
@@ -27,6 +27,10 @@ target_link_libraries(dukext
 )
 
 
-target_include_directories(dukext PUBLIC ${PROJECT_ROOT}/include ${PROJECT_ROOT}/vendor/duktape/src)
+target_include_directories(dukext PUBLIC 
+    ${PROJECT_SOURCE_DIR}/include 
+    ${PROJECT_SOURCE_DIR}/vendor/duktape/src
+)
+
 
 target_compile_definitions(dukext PRIVATE LOG_USE_COLOR)
