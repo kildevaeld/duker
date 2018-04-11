@@ -13,3 +13,6 @@
 [submodule "vendor/uvhttp"]
 	path = vendor/uvhttp
 	url = git@github.com:kildevaeld/uvhttp
+[submodule "vendor/miniz"]
+	path = vendor/miniz
+	url = git@github.com:richgel999/miniz.git

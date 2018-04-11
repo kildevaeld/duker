@@ -55,6 +55,9 @@ bool dukext_module_set(dukext_t *vm, const char *name,
   duk_pop_2(ctx);
 }
 
+bool dukext_module_string_set(dukext_t *vm, const char *name,
+                              const char *script) {}
+
 duk_ret_t dukextp_module_push(duk_context *ctx) {
 
   const char *name = duk_require_string(ctx, 0);

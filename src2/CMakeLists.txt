@@ -16,6 +16,8 @@ set(SOURCES
     commonjs_module.c
     console.c
     ${PROJECT_SOURCE_DIR}/vendor/duktape/src/duktape.c
+
+    zip.c
 )
 
 add_library(dukext SHARED ${SOURCES})

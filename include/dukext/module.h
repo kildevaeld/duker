@@ -6,8 +6,6 @@
 extern "C" {
 #endif
 
-
-
 typedef duk_ret_t (*dukext_module_resolve_cb)(duk_context *);
 typedef duk_ret_t (*dukext_module_load_cb)(duk_context *);
 
@@ -17,6 +15,9 @@ bool dukext_set_module_resolver(dukext_t *vm, const char *protocol,
 
 bool dukext_module_set(dukext_t *vm, const char *name,
                        dukext_module_initializer init);
+
+bool dukext_module_string_set(dukext_t *vm, const char *name,
+                              const char *script);
 
 bool dukext_module_has(dukext_t *vm, const char *name);
 
