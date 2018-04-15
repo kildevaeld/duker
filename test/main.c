@@ -1,30 +1,24 @@
-#include <duker/duker.h>
+#include <dukext/dukext.h>
+#include <dukext/module.h>
+
 #include <stdio.h>
 #include <unity.h>
 
-void test_path_join() {
-  duker_t *ctx = dk_create(NULL);
-  TEST_ASSERT_NOT_NULL(ctx);
+void test_script_module() {
+  dukext_t *vm = dukext_create_default();
 
-  dk_add_default_modules(ctx);
-
-  // dk_eval_script(ctx, "", "require('path').join('test', '/test', '/mig/');");
-
-  duk_context *c = dk_duk_context(ctx);
-
-  // duk_eval_string(c, "require('path').join('test', '/test', '/mig/');");
-  dk_eval_script(ctx, "rapper",
-                 "require('path').join('test', '/test', '/mig/');");
-
-  const char *path = duk_require_string(c, -1);
-  TEST_ASSERT_EQUAL_STRING("test/test/mig", path);
-
-  dk_free(ctx);
+  dukext_module_string_set(vm, "test", "exports.test = 'Hello, World'");
+  dukext_err_t *err = NULL;
+  dukext_eval_script(vm, "console.log(require('test').test);", "path", &err);
+  if (err) {
+    printf("error %s\n", err->message);
+    dukext_err_free(err);
+  }
 }
 
 int main() {
 
   UNITY_BEGIN();
-  RUN_TEST(test_path_join);
+  RUN_TEST(test_script_module);
   return UNITY_END();
 }

@@ -31,10 +31,18 @@ duk_ret_t cjs_load_module(duk_context *ctx) {
   duk_get_prop_string(ctx, 0, "module");
   duk_require_function(ctx, -1);
 
-  duk_dup(ctx, 1);
-  duk_call(ctx, 1);
-
-  duk_put_prop_string(ctx, 1, "exports");
+  if (duk_is_c_function(ctx, -1)) {
+    duk_dup(ctx, 1);
+    duk_call(ctx, 1);
+    duk_put_prop_string(ctx, 1, "exports");
+  } else {
+    (void)duk_get_prop_string(ctx, 1, "exports");  /* exports */
+    (void)duk_get_prop_string(ctx, 1, "require");  /* require */
+    duk_dup(ctx, 1);                               /* module */
+    (void)duk_get_prop_string(ctx, 1, "filename"); /* __filename */
+    duk_push_undefined(ctx);                       /* __dirname */
+    duk_call(ctx, 5);
+  }
 
   return 0;
 }

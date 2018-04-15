@@ -33,8 +33,8 @@ endif(DUK_BUILD_UV)
 add_subdirectory(example)
 
 
-if(DUKER_BUILD_TEST)
+if(DUK_BUILD_TEST)
 	include(CTest)
 	add_subdirectory(vendor/unity)
 	add_subdirectory(test)
-endif(DUKER_BUILD_TEST)
+endif(DUK_BUILD_TEST)
