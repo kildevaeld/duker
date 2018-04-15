@@ -30,11 +30,12 @@ duk_ret_t cjs_load_module(duk_context *ctx) {
 
   duk_get_prop_string(ctx, 0, "module");
   duk_require_function(ctx, -1);
-
+  dukext_dump_context_stdout(ctx);
   if (duk_is_c_function(ctx, -1)) {
     duk_dup(ctx, 1);
     duk_call(ctx, 1);
     duk_put_prop_string(ctx, 1, "exports");
+
   } else {
     (void)duk_get_prop_string(ctx, 1, "exports");  /* exports */
     (void)duk_get_prop_string(ctx, 1, "require");  /* require */

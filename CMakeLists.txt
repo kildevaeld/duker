@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(duker)
+project(dukext)
 
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
