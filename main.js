@@ -6,8 +6,8 @@ fs.writeFile("./test-mig.json", JSON.stringify({
     hello: 'world'
 }));*/
 
-const term = require('term');
+const prompt = require('prompt');
 
-//const t = term.list('test', ['valg', 'valg2']);
+const t = prompt.list('test', ['valg', 'valg2']);
 
-console.log(term);
+console.log(t);

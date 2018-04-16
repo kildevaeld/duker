@@ -30,7 +30,7 @@ duk_ret_t cjs_load_module(duk_context *ctx) {
 
   duk_get_prop_string(ctx, 0, "module");
   duk_require_function(ctx, -1);
-  dukext_dump_context_stdout(ctx);
+
   if (duk_is_c_function(ctx, -1)) {
     duk_dup(ctx, 1);
     duk_call(ctx, 1);
@@ -43,6 +43,9 @@ duk_ret_t cjs_load_module(duk_context *ctx) {
     (void)duk_get_prop_string(ctx, 1, "filename"); /* __filename */
     duk_push_undefined(ctx);                       /* __dirname */
     duk_call(ctx, 5);
+    if (!duk_is_null_or_undefined(ctx, -1)) {
+      duk_put_prop_string(ctx, 1, "exports");
+    }
   }
 
   return 0;

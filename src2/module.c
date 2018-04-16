@@ -53,6 +53,8 @@ bool dukext_module_set(dukext_t *vm, const char *name,
   duk_put_prop_string(ctx, -2, name);
 
   duk_pop_2(ctx);
+
+  return true;
 }
 
 bool dukext_module_string_set(dukext_t *vm, const char *name,

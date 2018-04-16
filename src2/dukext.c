@@ -61,7 +61,7 @@ dukext_t *dukext_create(dukext_config_t config) {
     return NULL;
 
   vm->config = config;
-  vm->modules = NULL;
+  // vm->modules = NULL;
   vm->stats.count = 0;
   vm->stats.heap = 0;
 
@@ -103,9 +103,6 @@ void dukext_destroy(dukext_t *vm) {
   if (vm == NULL)
     return;
 
-  if (vm->modules) {
-  }
-
   duk_destroy_heap(vm->ctx);
   vm->ctx = NULL;
   free(vm);
@@ -115,6 +112,7 @@ void dukext_config_init(dukext_config_t *cfg) {
   cfg->logger = NULL;
   cfg->max_heap = 0;
   cfg->module_types = 0;
+  cfg->modules = 0;
   // cfg->resolver = NULL;
 }
 
@@ -128,6 +126,8 @@ void dukext_err_free(dukext_err_t *err) {
 }
 
 duk_context *dukext_get_ctx(dukext_t *vm) { return vm->ctx; }
+
+dukext_config_t dukext_get_config(dukext_t *vm) { return vm->config; };
 
 duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err) {
   char *buffer = NULL;

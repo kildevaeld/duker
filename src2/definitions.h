@@ -16,7 +16,7 @@ struct modules_bag_s {
 
 struct dukext_s {
   duk_context *ctx;
-  struct modules_bag_s *modules;
+  // struct modules_bag_s *modules;
   dukext_config_t config;
   dukext_stat_t stats;
 };

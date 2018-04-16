@@ -20,6 +20,11 @@ typedef duk_ret_t (*dukext_module_initializer)(duk_context *ctx);
 
 typedef enum { DUKEXT_FILE_TYPE = 1 << 0 } dukext_module_type;
 
+typedef enum {
+  DUKEXT_MOD_FILE = 1 << 0,
+  DUKEXT_MOD_PROMPT = 1 << 1,
+} dukext_buildins;
+
 typedef struct {
   char *message;
 } dukext_err_t;
@@ -28,6 +33,7 @@ typedef struct {
   // Logging handler
   dukext_console_logger logger;
   int module_types;
+  dukext_buildins modules;
   duk_size_t max_heap;
 } dukext_config_t;
 
@@ -48,6 +54,7 @@ void dukext_dump_stats(dukext_t *vm);
 
 // Properties
 duk_context *dukext_get_ctx(dukext_t *);
+dukext_config_t dukext_get_config(dukext_t *);
 
 duk_ret_t dukext_eval_path(dukext_t *vm, const char *path, dukext_err_t **err);
 duk_ret_t dukext_eval_script(dukext_t *vm, const char *script, const char *path,
