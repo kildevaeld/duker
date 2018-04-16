@@ -8,7 +8,7 @@ duk_ret_t de_prompt_list(duk_context *ctx) {
     duk_type_error(ctx, "should be array");
   }
 
-  int len = duk_get_length(ctx, 1); // auto ans = cli::input(msg);
+  int len = duk_get_length(ctx, 1);
 
   duk_enum(ctx, 1, 0);
   char *buf[len];
