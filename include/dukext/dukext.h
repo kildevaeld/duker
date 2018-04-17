@@ -33,7 +33,7 @@ typedef struct {
   // Logging handler
   dukext_console_logger logger;
   int module_types;
-  dukext_buildins modules;
+  int modules;
   duk_size_t max_heap;
 } dukext_config_t;
 

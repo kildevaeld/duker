@@ -96,6 +96,39 @@ bool dukext_module_string_set(dukext_t *vm, const char *name,
   return true;
 }
 
+bool dukext_module_lstring_set(dukext_t *vm, const char *name,
+                               const char *buffer, size_t len) {
+  duk_context *ctx = vm->ctx;
+  duk_push_global_stash(ctx);
+  duk_get_prop_string(ctx, -1, "modules");
+
+  if (duk_has_prop_string(ctx, -1, name)) {
+    duk_pop_2(ctx);
+    return false;
+  }
+
+  duk_push_string(ctx,
+                  "(function(exports,require,module,__filename,__dirname){");
+
+  duk_push_string(ctx, (buffer[0] == '#' && buffer[1] == '!')
+                           ? "//"
+                           : "");     /* Shebang support. */
+  duk_push_lstring(ctx, buffer, len); /* source */
+  duk_push_string(
+      ctx,
+      "\n})"); /* Newline allows module last line to contain a // comment. */
+  duk_concat(ctx, 4);
+  duk_push_string(ctx, name); // filename
+  duk_compile(ctx, DUK_COMPILE_EVAL);
+  duk_call(ctx, 0);
+
+  duk_put_prop_string(ctx, -2, name);
+
+  duk_pop_2(ctx);
+
+  return true;
+}
+
 duk_ret_t dukextp_module_push(duk_context *ctx) {
 
   const char *name = duk_require_string(ctx, 0);

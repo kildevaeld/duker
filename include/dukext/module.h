@@ -19,6 +19,9 @@ bool dukext_module_set(dukext_t *vm, const char *name,
 bool dukext_module_string_set(dukext_t *vm, const char *name,
                               const char *script);
 
+bool dukext_module_lstring_set(dukext_t *vm, const char *name,
+                               const char *script, size_t len);
+
 bool dukext_module_has(dukext_t *vm, const char *name);
 
 duk_ret_t dukextp_module_push(duk_context *ctx);
