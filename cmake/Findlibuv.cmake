@@ -15,7 +15,7 @@ find_path(LIBUV_INCLUDE_DIR uv.h
           HINTS ${PC_LIBUV_INCLUDEDIR} ${PC_LIBUV_INCLUDE_DIRS}
           PATH_SUFFIXES uv )
 
-find_library(LIBUV_LIBRARY NAMES uv
+find_library(LIBUV_LIBRARY NAMES libuv.a libuv
              HINTS ${PC_LIBUV_LIBDIR} ${PC_LIBUV_LIBRARY_DIRS} )
 
 include(FindPackageHandleStandardArgs)

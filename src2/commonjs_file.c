@@ -6,16 +6,16 @@
 #include <dukext/module.h>
 #include <dukext/utils.h>
 
-#ifdef CS_PLATFORM_DARWIN
+/*#ifdef CS_PLATFORM_DARWIN
 #define CS_LIBRARY_EXT ".dylib"
 #elif CS_PLATFORM_POSIX
 #define CS_LIBRARY_EXT ".so"
-#endif
+#endif*/
 
 static bool cs_is_dll(const char *filename) {
   int iexts;
   cs_path_ext(filename, &iexts);
-  return strcmp(filename + iexts, CS_LIBRARY_EXT) == 0;
+  return strcmp(filename + iexts, CS_DLL_EXTENSION) == 0;
 }
 
 static bool file_exists(char *buffer, size_t len, const char *ext) {
@@ -62,7 +62,7 @@ duk_ret_t cjs_resolve_file(duk_context *ctx) {
     len = strlen(full_file);
     char buf[len + 15];
     strcpy(buf, full_file);
-    if (file_exists(buf, len, CS_LIBRARY_EXT)) {
+    if (file_exists(buf, len, CS_DLL_EXTENSION)) {
       duk_push_string(ctx, buf);
       duk_put_prop_index(ctx, array, al++);
       strcpy(buf, full_file);
@@ -236,7 +236,7 @@ duk_ret_t cjs_load_file(duk_context *ctx) {
     }
 
     // DLL
-    if (strcmp(n + iexts, CS_LIBRARY_EXT) == 0) {
+    if (strcmp(n + iexts, CS_DLL_EXTENSION) == 0) {
       ret = duk_safe_call(ctx, load_dll, NULL, 0, 0);
       // JS
     } else if (strcmp(n + iexts, ".js") == 0) {
