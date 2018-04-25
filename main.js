@@ -8,6 +8,8 @@ fs.writeFile("./test-mig.json", JSON.stringify({
 
 const prompt = require('prompt');
 
+prompt.input('Test:')
+
 const t = prompt.list('test', ['valg', 'valg2']);
 
 console.log(t);
