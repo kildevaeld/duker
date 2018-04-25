@@ -20,7 +20,7 @@ set(SOURCES
     zip.c
 )
 
-add_library(dukext SHARED ${SOURCES})
+add_library(dukext STATIC ${SOURCES})
 target_link_libraries(dukext
     csystem
     csystem_terminal

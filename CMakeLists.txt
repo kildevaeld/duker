@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 project(dukext)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+
 set(PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 set(DUK_BUILD_TEST "" off)
