@@ -1,6 +1,7 @@
 #include <dukext/dukext.h>
 #include <dukext/module.h>
 //#include <duker/pool.h>
+#include <dukext/curl/curl.h>
 #include <dukext/uv/uv.h>
 #include <stdio.h>
 
@@ -14,10 +15,10 @@ static int run_single(const char *path) {
 
   dukext_config_t config;
   dukext_config_init(&config);
-  config.max_heap = 1024 << 16;
+  config.max_heap = 1024 << 24;
   config.module_types = DUKEXT_FILE_TYPE;
   config.modules = DUKEXT_MOD_FILE | DUKEXT_MOD_PROMPT;
-  
+
   dukext_t *vm;
   if (!(vm = dukext_create(config))) {
     printf("could not init duk\n");
@@ -25,6 +26,7 @@ static int run_single(const char *path) {
   };
   dukext_dump_stats(vm);
   dukext_uv_init(vm, uv_default_loop());
+  dukext_curl_init(vm);
 
   dukext_module_set(vm, "test", mod);
   dukext_err_t *err = NULL;
