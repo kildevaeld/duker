@@ -288,6 +288,15 @@ static duk_ret_t curl_client_request(duk_context *ctx) {
   }
 
   CURLcode ret = curl_easy_perform(curl);
+  duk_push_this(ctx);
+  if (duk_has_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("header"))) {
+    duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("header"));
+    struct curl_slist *list = (struct curl_slist *)duk_get_pointer(ctx, -1);
+    duk_pop(ctx);
+    duk_del_prop_string(ctx, -!, DUK_HIDDEN_SYMBOL("header"));
+    curl_slist_free_all(list);
+  }
+  duk_pop(ctx);
 
   if (ret != CURLE_OK) {
     duk_type_error(ctx, "somethin went wrong: %s", curl_easy_strerror(ret));
