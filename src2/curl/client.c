@@ -3,7 +3,27 @@
 #include <duktape.h>
 #include <stdbool.h>
 
-static duk_ret_t curl_client_dtor(duk_context *ctx) { return 0; }
+static duk_ret_t curl_client_dtor(duk_context *ctx) {
+  printf("dtor\n");
+  if (duk_has_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("header"))) {
+    duk_get_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("header"));
+    struct curl_slist *list = (struct curl_slist *)duk_get_pointer(ctx, -1);
+    duk_pop(ctx);
+    duk_del_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("header"));
+    curl_slist_free_all(list);
+  }
+
+  duk_get_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("header"));
+
+  if (duk_is_undefined(ctx, -1))
+    return 0;
+
+  CURL *curl = (CURL *)duk_get_pointer(ctx, -1);
+
+  curl_easy_cleanup(curl);
+
+  return 0;
+}
 
 static duk_ret_t curl_client_ctor(duk_context *ctx) {
   if (!duk_is_constructor_call(ctx)) {
@@ -66,6 +86,18 @@ static bool build_curl_request_header(duk_context *ctx, duk_idx_t idx,
   }
 
   return true;
+}
+
+static int xferinfo(void *p, curl_off_t dltotal, curl_off_t dlnow,
+                    curl_off_t ultotal, curl_off_t ulnow) {
+  printf("\rProcent %d/%d - %d/%d", dlnow, dltotal, ulnow, ultotal);
+  return 0;
+}
+
+static int curl_progress_cb(void *clientp, double dltotal, double dlnow,
+                            double ultotal, double ulnow) {
+  return xferinfo(clientp, (curl_off_t)dltotal, (curl_off_t)dlnow,
+                  (curl_off_t)ultotal, (curl_off_t)ulnow);
 }
 
 struct mdata {
@@ -176,6 +208,31 @@ static bool build_curl_request(duk_context *ctx, duk_idx_t idx, CURL *curl,
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_request_write_cb);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, state);
 
+  // Progress
+
+  curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, curl_progress_cb);
+  /* pass the struct pointer into the progress function */
+  // curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, &prog);
+
+#if LIBCURL_VERSION_NUM >= 0x072000
+  /* xferinfo was introduced in 7.32.0, no earlier libcurl versions will
+     compile as they won't have the symbols around.
+
+     If built with a newer libcurl, but running with an older libcurl:
+     curl_easy_setopt() will fail in run-time trying to set the new
+     callback, making the older callback get used.
+
+     New libcurls will prefer the new callback and instead use that one even
+     if both callbacks are set. */
+
+  curl_easy_setopt(curl, CURLOPT_XFERINFOFUNCTION, xferinfo);
+  /* pass the struct pointer into the xferinfo function, note that this is
+     an alias to CURLOPT_PROGRESSDATA */
+  // curl_easy_setopt(curl, CURLOPT_XFERINFODATA, &prog);
+#endif
+
+  curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 0L);
+
   return true;
 }
 
@@ -233,7 +290,7 @@ static duk_ret_t curl_client_request(duk_context *ctx) {
   CURLcode ret = curl_easy_perform(curl);
 
   if (ret != CURLE_OK) {
-    duk_type_error(ctx, "somethin went wrong");
+    duk_type_error(ctx, "somethin went wrong: %s", curl_easy_strerror(ret));
   }
 
   push_curl_response(ctx, curl, &data, &header);

@@ -18,7 +18,7 @@ const c = new curl.Client();
 const res = c.request({
     url: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Big_%26_Small_Pumkins.JPG",
     bodyWriter: function (buffer) {
-        console.log('buffer', buffer.length);
+        //console.log('buffer', buffer.length);
     }
 });
 
