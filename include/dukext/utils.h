@@ -6,6 +6,14 @@
 extern "C" {
 #endif
 
+typedef struct dukext_bag_t {
+  duk_context *ctx;
+  int ref; // Reference in the ref store to the callback
+  void *data;
+  duk_size_t size;
+  int flag;
+} dukext_bag_t;
+
 // Global stash
 void duk_stash_set_ptr(duk_context *ctx, const char *name, void *ptr);
 void *duk_stash_get_ptr(duk_context *ctx, const char *name);

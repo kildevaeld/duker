@@ -1,5 +1,5 @@
+#include <curl/curl.h>
 #include <duktape.h>
-
 static duk_ret_t curl_form_dtor(duk_context *ctx) {}
 
 static duk_ret_t curl_form_ctor(duk_context *ctx) {
@@ -7,7 +7,9 @@ static duk_ret_t curl_form_ctor(duk_context *ctx) {
     return DUK_RET_TYPE_ERROR;
   }
 
-  return 0;
+  curl_mime *mime = curl_mime_init()
+
+      return 0;
 }
 
 static duk_ret_t curl_form_add(duk_context *ctx) {}

@@ -2,6 +2,9 @@
 set(SOURCES
     curl.c
     client.c
+    request.c
+    curl-request.c
+    utils.c
     #form.c
     #header.c
 )
