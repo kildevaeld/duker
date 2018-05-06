@@ -8,8 +8,8 @@ static duk_ret_t duk_io_reader_read(duk_context *ctx) {
     duk_type_error(ctx, "cannot use Reader directly");
   }
   duk_push_this(ctx);
-  duk_get_prop_string(ctx, -1, "_reader");
-
+  duk_get_prop_string(ctx, -1, "_read");
+  duk_dup(ctx, -2);
   duk_dup(ctx, 0);
   duk_call_method(ctx, 1);
   duk_pop(ctx);
@@ -23,10 +23,10 @@ void duk_io_push_reader(duk_context *ctx) {
   duk_push_object(ctx);
 
   duk_push_c_function(ctx, duk_io_reader_read, 1);
-  duk_put_prop_string(ctx, -2, "write");
+  duk_put_prop_string(ctx, -2, "read");
   duk_push_c_function(ctx, duk_io_reader_read, 1);
   duk_set_magic(ctx, -1, 1);
-  duk_put_prop_string(ctx, -2, "_write");
+  duk_put_prop_string(ctx, -2, "_read");
 
   duk_put_prop_string(ctx, -2, "prototype");
 }

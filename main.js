@@ -7,7 +7,34 @@ fs.writeFile("./test-mig.json", JSON.stringify({
 }));*/
 
 const prompt = require('prompt'),
-    curl = require('curl');
+    curl = require('curl'),
+    io = require('io')
+
+
+const Reader = (function (Super) {
+
+    function Reader() {
+        Super.call(this);
+        this.sent = false;
+    }
+
+    Reader.prototype = Object.create(Super.prototype);
+
+    /*Object.assign(Reader.prototype, Super.prototype, {
+        
+    });*/
+    Reader.prototype._read = function (size) {
+        console.log('size', size);
+        if (this.sent) return null;
+        this.sent = true;
+        return new Buffer("Hello, World!");
+    };
+
+    Reader.prototype.constructor = Super;
+
+    return Reader;
+
+})(io.Reader)
 
 //prompt.input('Test:')
 
@@ -16,7 +43,7 @@ const prompt = require('prompt'),
 const req = new curl.Request({
     url: 'http://localhost:8000',
     method: 'POST',
-    data: 'Test'
+    data: new Reader
 });
 
 

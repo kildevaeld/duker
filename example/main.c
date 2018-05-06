@@ -3,6 +3,7 @@
 //#include <duker/pool.h>
 #include <dukext/curl/curl.h>
 #include <dukext/uv/uv.h>
+#include <dukext/io//io.h>
 #include <stdio.h>
 
 static duk_ret_t mod(duk_context *ctx) {
@@ -26,7 +27,9 @@ static int run_single(const char *path) {
   };
   dukext_dump_stats(vm);
   dukext_uv_init(vm, uv_default_loop());
+  dukext_io_init(vm);
   dukext_curl_init(vm);
+
 
   dukext_module_set(vm, "test", mod);
   dukext_err_t *err = NULL;

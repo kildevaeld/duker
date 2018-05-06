@@ -94,12 +94,13 @@ static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
   size_t buffer_size = size * nitems;
 
   duk_context *ctx = progress->ctx;
-  
+ 
   duk_push_ref(progress->ctx, progress->ref);
+   
   if (duk_is_string(progress->ctx, -1) || duk_is_buffer(ctx, -1)) {
     duk_size_t len = duk_get_length(ctx, -1);
     if (len == progress->size) {
-      return 0;
+      goto end;
     }
 
     duk_size_t re = len - progress->size;
@@ -121,11 +122,17 @@ static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
     return read_l;
 
   } else {
-    duk_get_prop_string(ctx, -1, "read");
+    duk_push_string(ctx, "read");
     duk_push_number(ctx, (duk_double_t)buffer_size);
-    duk_call_method(ctx, 1);
+    duk_call_prop(ctx, -3, 1);
+    
   }
+  
+  
+  dukext_dump_context_stdout(ctx);
 
+end:
+  duk_pop(ctx);
   return 0;
 }
 

@@ -9,7 +9,7 @@ static duk_ret_t duk_io_writer_write(duk_context *ctx) {
   }
   duk_push_this(ctx);
   duk_get_prop_string(ctx, -1, "_write");
-
+  duk_dup(ctx, -2);
   duk_dup(ctx, 0);
   duk_call_method(ctx, 1);
   duk_pop(ctx);
