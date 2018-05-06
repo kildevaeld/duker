@@ -29,6 +29,8 @@ find_package(csystem)
 #add_subdirectory(src)
 add_subdirectory(src2)
 
+add_subdirectory(src2/io)
+
 if (DUK_BUILD_UV)
 	find_package(libuv)
 	add_subdirectory(src2/uv)

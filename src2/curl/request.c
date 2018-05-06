@@ -1,8 +1,19 @@
+#include <curl/curl.h>
+#include <dukext/io/io.h>
 #include <dukext/utils.h>
 #include <duktape.h>
 #include <stdbool.h>
 
-static duk_ret_t curl_request_dtor(duk_context *ctx) { return 0; }
+static duk_ret_t curl_request_dtor(duk_context *ctx) {
+
+  if (duk_has_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("requestheader"))) {
+    duk_get_prop_string(ctx, -1, DUK_HIDDEN_SYMBOL("requestheader"));
+    struct curl_slist *list = (struct curl_slist *)duk_get_pointer(ctx, -1);
+    curl_slist_free_all(list);
+  }
+
+  return 0;
+}
 
 static bool validate_options(duk_context *ctx, char **err) {
 
@@ -46,10 +57,21 @@ static bool validate_options(duk_context *ctx, char **err) {
     duk_pop(ctx);
   }
 
-  char *fields[] = {"progress", "method", "url", "header"};
+  if (duk_has_prop_string(ctx, 0, "data")) {
+    duk_get_prop_string(ctx, 0, "data");
+    if (!duk_is_buffer(ctx, -1) && !duk_is_string(ctx, -1) &&
+        !duk_io_is_reader(ctx, -1)) {
+      duk_pop(ctx);
+      *err = "progress should be a buffer, string or a reader";
+      return false;
+    }
+    duk_pop(ctx);
+  }
+
+  char *fields[] = {"progress", "method", "url", "header", "data"};
   size_t len = sizeof(fields);
   duk_push_object(ctx);
-  for (int i = 0; i < 4; i++) {
+  for (int i = 0; i < 5; i++) {
     if (duk_has_prop_string(ctx, 0, fields[i])) {
       duk_get_prop_string(ctx, 0, fields[i]);
       duk_put_prop_string(ctx, -2, fields[i]);
@@ -78,6 +100,9 @@ static duk_ret_t curl_request_ctor(duk_context *ctx) {
     duk_push_object(ctx);
   }
   duk_put_prop_string(ctx, -2, DUK_HIDDEN_SYMBOL("_options"));
+
+  duk_push_c_function(ctx, curl_request_dtor, 1);
+  duk_set_finalizer(ctx, -2);
 
   return 0;
 }
@@ -199,7 +224,8 @@ static duk_ret_t curl_request_get_url(duk_context *ctx) {
 static duk_ret_t curl_request_set_data(duk_context *ctx) {
   duk_push_this(ctx);
 
-  if (!duk_is_string(ctx, 0) & !duk_is_buffer(ctx, 0)) {
+  if (!duk_is_string(ctx, 0) && !duk_is_buffer(ctx, 0) &&
+      !duk_io_is_reader(ctx, 0)) {
     duk_type_error(ctx, "string or buffer");
   }
 

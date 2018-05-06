@@ -1,5 +1,6 @@
 #include <curl/curl.h>
 #include <dukext/curl/utils.h>
+#include <dukext/io/io.h>
 #include <dukext/utils.h>
 #include <duktape.h>
 #include <stdbool.h>
@@ -88,8 +89,45 @@ static int curl_progress_cb(void *clientp, double dltotal, double dlnow,
                   (curl_off_t)ultotal, (curl_off_t)ulnow);
 }
 
-static size_t curl_read_cb(char *buffer, size_t size, size_t nitems,
-                           void *instream) {}
+static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
+  dukext_bag_t *progress = (dukext_bag_t *)p;
+  size_t buffer_size = size * nitems;
+
+  duk_context *ctx = progress->ctx;
+  
+  duk_push_ref(progress->ctx, progress->ref);
+  if (duk_is_string(progress->ctx, -1) || duk_is_buffer(ctx, -1)) {
+    duk_size_t len = duk_get_length(ctx, -1);
+    if (len == progress->size) {
+      return 0;
+    }
+
+    duk_size_t re = len - progress->size;
+
+    int read_l = re > buffer_size ? buffer_size : re;
+
+    const char *data;
+    duk_size_t size = len;
+    if (duk_is_string(ctx, -1)) {
+      data = duk_get_string(ctx, -1);
+    } else {
+      data = duk_get_buffer(ctx, -1, &size);
+    }
+
+    memcpy(buffer, data + progress->size, read_l);
+    
+    progress->size += read_l;
+
+    return read_l;
+
+  } else {
+    duk_get_prop_string(ctx, -1, "read");
+    duk_push_number(ctx, (duk_double_t)buffer_size);
+    duk_call_method(ctx, 1);
+  }
+
+  return 0;
+}
 
 static void build_curl_request_progress(CURL *curl, dukext_bag_t *progress) {
   // Progress
@@ -120,7 +158,10 @@ static void build_curl_request_progress(CURL *curl, dukext_bag_t *progress) {
 static bool duk_curl_request(duk_context *ctx, CURL *curl,
                              struct curl_bag *bags, char **err) {
 
+  //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   duk_idx_t idx = duk_normalize_index(ctx, -1);
+
+  struct curl_slist *list = NULL;
 
   duk_get_prop_string(ctx, idx, "url");
   if (!duk_is_string(ctx, -1)) {
@@ -140,6 +181,23 @@ static bool duk_curl_request(duk_context *ctx, CURL *curl,
 
   curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, duk_get_string(ctx, -1));
   duk_pop(ctx);
+
+  duk_get_prop_string(ctx, idx, "header");
+  if (duk_is_undefined(ctx, -1)) {
+    duk_pop(ctx);
+  } else {
+    duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
+    while (duk_next(ctx, -1, 1)) {
+      duk_push_string(ctx, ": ");
+      duk_dup(ctx, -3);
+      duk_dup(ctx, -2);
+      duk_join(ctx, 2);
+
+      list = curl_slist_append(list, duk_get_string(ctx, -1));
+
+      duk_pop_3(ctx);
+    }
+  }
 
   // Setup body writer function
   dukext_bag_t *body = bags->body;
@@ -169,6 +227,33 @@ static bool duk_curl_request(duk_context *ctx, CURL *curl,
     progress->ref = duk_ref(ctx);
     build_curl_request_progress(curl, progress);
   }
+
+  // Setup read callback
+  duk_get_prop_string(ctx, -1, "data");
+  if (duk_is_undefined(ctx, -1)) {
+    duk_pop(ctx);
+  } else {
+    if (duk_is_string(ctx, -1) || duk_is_buffer(ctx, -1)) {
+      duk_size_t len = duk_get_length(ctx, -1);
+      char num[64];
+      sprintf(num, "Content-Length: %lu", len);
+      list = curl_slist_append(list, num);
+    } else {
+      list = curl_slist_append(list, "Transfer-Encoding: chunked");
+    }
+    dukext_bag_t *data = bags->data;
+    data->ref = duk_ref(ctx);
+     curl_easy_setopt(curl, CURLOPT_POST, 1L);
+    curl_easy_setopt(curl, CURLOPT_READFUNCTION, curl_read_cb);
+    curl_easy_setopt(curl, CURLOPT_READDATA, data);
+  }
+
+  // Set headers and save it on the
+  // request for mem management
+  
+  curl_easy_setopt(curl, CURLOPT_HTTPHEADER, list);
+  duk_push_pointer(ctx, list);
+  duk_put_prop_string(ctx, idx, DUK_HIDDEN_SYMBOL("requestheader"));
 
   duk_pop(ctx); // request
 
@@ -217,6 +302,7 @@ static duk_ret_t curl_request(duk_context *ctx) {
     duk_type_error(ctx, "error %s", err);
   }
 
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
   CURLcode ret = curl_easy_perform(curl);
 
   if (ret != CURLE_OK) {

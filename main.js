@@ -13,7 +13,13 @@ const prompt = require('prompt'),
 
 //const t = prompt.list('test', ['valg', 'valg2']);
 
-const c = new curl.Client();
+const req = new curl.Request({
+    url: 'http://localhost:8000',
+    method: 'POST',
+    data: 'Test'
+});
+
+
 
 /*const res = c.request({
     url: "https://upload.wikimedia.org/wikipedia/commons/d/dd/Big_%26_Small_Pumkins.JPG",
@@ -26,22 +32,21 @@ const c = new curl.Client();
     }
 });*/
 
-var req = new curl.Request({
-    url: 'http://google.com',
-    tjallo: true,
+/*var req = new curl.Request({
+    url: 'https://google.com',
     header: {
         'content-type': 'application/json'
     }
-});
+});*/
 
 const rsp = curl.req(req);
-console.log(req.header);
+console.log(new TextDecoder().decode(rsp.body));
 
 
 //req.progress = '' //function () {}
 
 
-console.log(req.get('content-type'));
+console.log(req);
 //console.log(res.header, res.statusCode);
 
 //console.log(new TextDecoder().decode(res.data));

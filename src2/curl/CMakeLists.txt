@@ -10,4 +10,4 @@ set(SOURCES
 )
 
 add_library(dukext-curl ${SOURCES})
-target_link_libraries(dukext-curl dukext curl)
+target_link_libraries(dukext-curl dukext dukext-io curl)
