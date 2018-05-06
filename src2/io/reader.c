@@ -12,7 +12,9 @@ static duk_ret_t duk_io_reader_read(duk_context *ctx) {
   duk_dup(ctx, -2);
   duk_dup(ctx, 0);
   duk_call_method(ctx, 1);
-  duk_pop(ctx);
+
+  
+  //duk_pop(ctx);
 
   return 1;
 }

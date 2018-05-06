@@ -118,6 +118,7 @@ static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
     memcpy(buffer, data + progress->size, read_l);
     
     progress->size += read_l;
+    duk_pop_2(ctx);
 
     return read_l;
 
@@ -127,6 +128,41 @@ static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
     
     duk_call_prop(ctx, -3, 1);
     dukext_dump_context_stdout(ctx);
+
+    if (duk_is_null_or_undefined(ctx,-1)) {
+      duk_pop(ctx);
+      goto end;
+    }
+
+
+
+    duk_size_t size;
+    const char *data;
+    if (duk_is_string(ctx, -1)) {
+      data = duk_get_string(ctx, -1);
+      size = duk_get_length(ctx, -1);
+    } else if (duk_is_buffer(ctx, -1)) {
+      data = (const char*)duk_get_buffer(ctx, -1, &size);
+    } else {
+      dukext_dump_context_stdout(ctx);
+      return -1;
+    }
+    
+    if (size == progress->size) {
+      duk_pop(ctx);
+      goto end;
+    }
+
+    duk_size_t re = size - progress->size;
+
+    int read_l = re > buffer_size ? buffer_size : re;
+
+    memcpy(buffer, data + progress->size, read_l);
+    
+    progress->size += read_l;
+    duk_pop_2(ctx);
+    return read_l;
+
   }
   
   

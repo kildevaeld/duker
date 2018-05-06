@@ -24,7 +24,7 @@ const Reader = (function (Super) {
         
     });*/
     Reader.prototype._read = function (size) {
-        console.log('size', size);
+
         if (this.sent) return null;
         this.sent = true;
         return new Buffer("Hello, World!");
