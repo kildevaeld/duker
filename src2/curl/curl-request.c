@@ -121,15 +121,16 @@ static size_t curl_read_cb(char *buffer, size_t size, size_t nitems, void *p) {
 
     return read_l;
 
-  } else {
+  } else { 
     duk_push_string(ctx, "read");
     duk_push_number(ctx, (duk_double_t)buffer_size);
-    duk_call_prop(ctx, -3, 1);
     
+    duk_call_prop(ctx, -3, 1);
+    dukext_dump_context_stdout(ctx);
   }
   
   
-  dukext_dump_context_stdout(ctx);
+ 
 
 end:
   duk_pop(ctx);
