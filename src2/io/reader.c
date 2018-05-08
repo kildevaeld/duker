@@ -13,14 +13,17 @@ static duk_ret_t duk_io_reader_read(duk_context *ctx) {
   duk_dup(ctx, 0);
   duk_call_method(ctx, 1);
 
-  
-  //duk_pop(ctx);
+  // duk_pop(ctx);
 
   return 1;
 }
 
 void duk_io_push_reader(duk_context *ctx) {
   duk_push_c_function(ctx, duk_io_reader_ctor, 0);
+
+  duk_push_string(ctx, "name");
+  duk_push_string(ctx, "Reader");
+  duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 
   duk_push_object(ctx);
 

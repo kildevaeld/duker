@@ -249,8 +249,9 @@ static duk_ret_t curl_request_get_data(duk_context *ctx) {
 void dukext_curl_push_request(duk_context *ctx) {
   duk_push_c_function(ctx, curl_request_ctor, 1);
 
-  // duk_push_string(ctx, "Request");
-  // duk_put_prop_string(ctx, -2, "name");
+  duk_push_string(ctx, "name");
+  duk_push_string(ctx, "Request");
+  duk_def_prop(ctx, -3, DUK_DEFPROP_HAVE_VALUE);
 
   duk_idx_t idx = duk_push_object(ctx); // prototype
 

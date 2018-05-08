@@ -3,6 +3,7 @@ set(SOURCES
    io.c
    reader.c
    writer.c
+   file.c
 )
 
 add_library(dukext-io ${SOURCES})

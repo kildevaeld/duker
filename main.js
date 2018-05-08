@@ -39,7 +39,6 @@ const Reader = (function (Super) {
 //prompt.input('Test:')
 
 //const t = prompt.list('test', ['valg', 'valg2']);
-
 const req = new curl.Request({
     url: 'http://localhost:8000',
     method: 'POST',
@@ -70,10 +69,12 @@ const rsp = curl.req(req);
 console.log(new TextDecoder().decode(rsp.body));
 
 
+var file = new io.File();
+
+
 //req.progress = '' //function () {}
 
 
-console.log(req);
 //console.log(res.header, res.statusCode);
 
 //console.log(new TextDecoder().decode(res.data));
