@@ -196,7 +196,7 @@ static void build_curl_request_progress(CURL *curl, dukext_bag_t *progress) {
 static bool duk_curl_request(duk_context *ctx, CURL *curl,
                              struct curl_bag *bags, char **err) {
 
-  // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
   duk_idx_t idx = duk_normalize_index(ctx, -1);
 
   struct curl_slist *list = NULL;
@@ -221,20 +221,26 @@ static bool duk_curl_request(duk_context *ctx, CURL *curl,
   duk_pop(ctx);
 
   duk_get_prop_string(ctx, idx, "header");
+
   if (duk_is_undefined(ctx, -1)) {
     duk_pop(ctx);
   } else {
+
     duk_enum(ctx, -1, DUK_ENUM_OWN_PROPERTIES_ONLY);
+
     while (duk_next(ctx, -1, 1)) {
+
       duk_push_string(ctx, ": ");
       duk_dup(ctx, -3);
-      duk_dup(ctx, -2);
+      duk_dup(ctx, -3);
+
       duk_join(ctx, 2);
 
       list = curl_slist_append(list, duk_get_string(ctx, -1));
 
       duk_pop_3(ctx);
     }
+    duk_pop_2(ctx); // pop enum + header
   }
 
   // Setup body writer function
@@ -268,9 +274,11 @@ static bool duk_curl_request(duk_context *ctx, CURL *curl,
 
   // Setup read callback
   duk_get_prop_string(ctx, -1, "data");
+
   if (duk_is_undefined(ctx, -1)) {
     duk_pop(ctx);
   } else {
+
     if (duk_is_string(ctx, -1) || duk_is_buffer(ctx, -1)) {
       duk_size_t len = duk_get_length(ctx, -1);
       char num[64];
@@ -335,7 +343,10 @@ static duk_ret_t curl_request(duk_context *ctx) {
 
   CURL *curl = curl_easy_init();
   char *err = NULL;
-  duk_dup(ctx, 0);
+
+  // duk_dup(ctx, 0);
+  duk_get_prop_string(ctx, 0, DUK_HIDDEN_SYMBOL("_options"));
+
   if (!duk_curl_request(ctx, curl, &state, &err)) {
     curl_easy_cleanup(curl);
     duk_type_error(ctx, "error %s", err);
