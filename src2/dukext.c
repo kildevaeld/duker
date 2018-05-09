@@ -11,6 +11,9 @@
 #include <dukext/module.h>
 #include <dukext/utils.h>
 
+extern bool dukext_initialize_types(duk_context *ctx);
+extern void dukext_initialize_context(duk_context *ctx);
+
 dukext_t *dukext_create_default() {
   dukext_config_t cfg;
   dukext_config_init(&cfg);
@@ -76,6 +79,9 @@ dukext_t *dukext_create(dukext_config_t config) {
     free(vm);
     return NULL;
   }
+
+  dukext_initialize_context(vm->ctx);
+  dukext_initialize_types(vm->ctx);
 
   duk_stash_set_ptr(vm->ctx, "dukext_vm", vm);
   init_stash(vm->ctx);

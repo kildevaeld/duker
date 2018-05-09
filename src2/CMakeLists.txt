@@ -15,6 +15,8 @@ set(SOURCES
     commonjs_file.c
     commonjs_module.c
     console.c
+    types.c
+    private.c
     ${PROJECT_SOURCE_DIR}/vendor/duktape/src/duktape.c
 
     zip.c

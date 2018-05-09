@@ -28,6 +28,7 @@ static int run_single(const char *path) {
   dukext_io_init(vm);
   dukext_curl_init(vm);
 
+  
   dukext_module_set(vm, "test", mod);
   dukext_err_t *err = NULL;
   duk_ret_t ret = dukext_eval_path(vm, path, &err);
